@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35013.160
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kimi.MudBlazorExtentions", "Kimi.MudBlazorExtentions\Kimi.MudBlazorExtentions.csproj", "{7825B763-99EF-4808-8C68-7B4988E9EBC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kimi.MudBlazorExtentions.Tests", "Kimi.MudBlazorExtentions.Tests\Kimi.MudBlazorExtentions.Tests.csproj", "{F9091677-1142-41E4-A408-664DA7480203}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1D8861DA-239B-465B-B154-E36C343975E2}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7825B763-99EF-4808-8C68-7B4988E9EBC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7825B763-99EF-4808-8C68-7B4988E9EBC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7825B763-99EF-4808-8C68-7B4988E9EBC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7825B763-99EF-4808-8C68-7B4988E9EBC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9091677-1142-41E4-A408-664DA7480203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9091677-1142-41E4-A408-664DA7480203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9091677-1142-41E4-A408-664DA7480203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9091677-1142-41E4-A408-664DA7480203}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7E5ED181-5C8A-4514-9D8B-387885F3A860}
+	EndGlobalSection
+EndGlobal

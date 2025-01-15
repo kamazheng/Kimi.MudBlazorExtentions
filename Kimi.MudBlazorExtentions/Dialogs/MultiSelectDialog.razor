@@ -1,0 +1,36 @@
+﻿@typeparam T
+
+<MudDialog DefaultFocus="DefaultFocus.LastChild">
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField @bind-Value="searchText" Placeholder="Search..." Immediate="true" OnInput="FilterItems" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <div style="display:flex">
+                    <MudSpacer></MudSpacer>
+                    <MudButton Variant="Variant.Outlined" OnClick="SelectAll">Select/UnSelect All</MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudVirtualize Items="FilteredItems" ItemSize="50" Context="item">
+                    <MudListItem T="SelectDialogItem<T>" >
+                        <MudCheckBox @bind-Value="item.IsSelected" Label="@item.Text" />
+                    </MudListItem>                        
+                </MudVirtualize>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        @if (!String.IsNullOrEmpty(SubmitButtonText))
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">@SubmitButtonText</MudButton>
+        }
+        @if (!String.IsNullOrEmpty(CancelButtonText))
+        {
+            <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Secondary">@CancelButtonText</MudButton>
+        }
+    </DialogActions>
+</MudDialog>

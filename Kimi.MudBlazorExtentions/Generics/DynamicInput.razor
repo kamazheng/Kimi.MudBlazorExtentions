@@ -1,0 +1,132 @@
+﻿@using Kimi.MudBlazorExtentions.Extensions
+@using MudBlazor
+@inherits MudBaseInput<object>
+
+@{
+    var underlyingType = Nullable.GetUnderlyingType(Value!.GetType());
+    System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
+}
+
+@if (underlyingType == typeof(DateOnly))
+{
+    <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
+                   DateChanged="(e) => {Value =(object)TypeExtensions.ChangeType<DateTime>(DateOnly.FromDateTime((DateTime)e!)); ValueChanged.InvokeAsync(Value);}"
+                   Label="@Label"
+                   Margin="@Margin"
+                   HelperText="@HelperText"
+                   Adornment="@Adornment"
+                   AdornmentIcon="@AdornmentIcon"
+                   Variant="Variant"
+                   Disabled="Disabled"
+                   ReadOnly="ReadOnly"
+                   @attributes="AdditionalAttributes" />
+}
+else if (underlyingType == typeof(TimeOnly))
+{
+    <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
+                   TimeChanged="(e) => {Value = (object)TypeExtensions.ChangeType<DateTime>(TimeOnly.FromTimeSpan((TimeSpan)e!)); ValueChanged.InvokeAsync(Value);}"
+                   Label="@Label"
+                   Margin="@Margin"
+                   HelperText="@HelperText"
+                   Adornment="@Adornment"
+                   AdornmentIcon="@AdornmentIcon"
+                   Variant="Variant"
+                   Disabled="Disabled"
+                   ReadOnly="ReadOnly"
+                   @attributes="AdditionalAttributes" />
+}
+else
+{
+    switch (typeCode)
+    {
+        case TypeCode.DateTime:
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
+                                   DateChanged="(e) => {
+                                        var date = e ?? DateTime.Now;
+                                        var time = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay;
+                                        Value =(object)TypeExtensions.ChangeType<DateTime>(date.Date + time);
+                                        ValueChanged.InvokeAsync(Value);
+                                   }"
+                                   Label="@Label"
+                                   Margin="@Margin"
+                                   HelperText="@HelperText"
+                                   Adornment="@Adornment"
+                                   AdornmentIcon="@AdornmentIcon"
+                                   Variant="Variant"
+                                   Disabled="Disabled"
+                                   ReadOnly="ReadOnly"
+                                   @attributes="AdditionalAttributes" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
+                                   TimeChanged="(e) => {
+                                        var time = e ?? TimeSpan.Zero;
+                                        var date = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).Date;
+                                        Value = (object)TypeExtensions.ChangeType<DateTime>(date + time);
+                                        ValueChanged.InvokeAsync(Value);
+                                   }"
+                                   Label="@Label"
+                                   Margin="@Margin"
+                                   HelperText="@HelperText"
+                                   Adornment="@Adornment"
+                                   AdornmentIcon="@AdornmentIcon"
+                                   Variant="Variant"
+                                   Disabled="Disabled"
+                                   ReadOnly="ReadOnly"
+                                   @attributes="AdditionalAttributes" />
+                </MudItem>
+            </MudGrid>
+            break;
+        case TypeCode.Boolean:
+            <MudCheckBox T="bool?"
+                         Value="@((bool?)Value)"
+                         ValueChanged="(e) => {
+                                       Value = (object)TypeExtensions.ChangeType<bool>(e);
+                                   }"
+                         Disabled="Disabled"
+                         ReadOnly="ReadOnly"
+                         @attributes="AdditionalAttributes"></MudCheckBox>
+            break;
+        case TypeCode.Single:
+        case TypeCode.Double:
+        case TypeCode.Decimal:
+        case TypeCode.Int16:
+        case TypeCode.Int32:
+        case TypeCode.Int64:
+            <MudNumericField @bind-Value="@Value"
+                             Label="@Label"
+                             Margin="@Margin"
+                             HelperText="@HelperText"
+                             Adornment="@Adornment"
+                             AdornmentIcon="@AdornmentIcon"
+                             Variant="Variant"
+                             Disabled="Disabled"
+                             ReadOnly="ReadOnly"
+                             FullWidth="FullWidth"
+                             Immediate="Immediate"
+                             @attributes="AdditionalAttributes"></MudNumericField>
+            break;
+        default:
+            <MudTextField @bind-Value="@Value"
+                          Label="@Label"
+                          Typo="@Typo"
+                          Margin="@Margin"
+                          HelperText="@HelperText"
+                          Adornment="@Adornment"
+                          AdornmentIcon="@AdornmentIcon"
+                          Variant="Variant"
+                          Disabled="Disabled"
+                          ReadOnly="ReadOnly"
+                          FullWidth="FullWidth"
+                          Immediate="Immediate"
+                          @attributes="AdditionalAttributes"></MudTextField>
+            break;
+    }
+}
+
+@code {
+    [Parameter]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}

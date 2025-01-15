@@ -1,0 +1,71 @@
+﻿@using Microsoft.AspNetCore.Components;
+@using Kimi.MudBlazorExtentions.Extensions;
+@typeparam T
+
+<MudDialog DefaultFocus="DefaultFocus.Element">
+    <DialogContent>
+        <MudText>@ContentText</MudText>
+        @{
+            var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
+            if (underlyingType == typeof(DateOnly))
+            {
+                <MudDatePicker Date="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()))"
+                               DateChanged="(e) => InputContent = TypeExtensions.ChangeType<T>(DateOnly.FromDateTime((DateTime)e!))" />
+            }else if(underlyingType == typeof(TimeOnly))
+            {
+                <MudTimePicker Time="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
+                               TimeChanged="(e) => InputContent = TypeExtensions.ChangeType<T>(TimeOnly.FromTimeSpan((TimeSpan)e!))" />
+            }
+            else
+            {
+                switch (typeCode)
+                {
+                    case TypeCode.DateTime:
+                        <MudGrid>
+                            <MudItem xs="12" sm="6">
+                                <MudDatePicker Date="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()))"
+                                               DateChanged="(e) => {
+                                           var date = e ?? DateTime.Now;
+                                           var time = DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay;
+                                           InputContent = TypeExtensions.ChangeType<T>(date.Date + time);
+                                       }" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+
+                                <MudTimePicker Time="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
+                                               TimeChanged="(e) => {
+                                           var time = e ?? TimeSpan.Zero;
+                                           var date = DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).Date;
+                                           InputContent = TypeExtensions.ChangeType<T>(date + time);
+                                       }" />
+                            </MudItem>
+                        </MudGrid>
+                        break;
+                    case TypeCode.Boolean:
+                        <MudCheckBox T="T" @bind-Value="@InputContent"></MudCheckBox>
+                        break;
+                    case TypeCode.Single:
+                    case TypeCode.Double:
+                    case TypeCode.Decimal:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                        <MudFocusTrap>
+                            <MudNumericField @ref="numberInput" T="T" @bind-Value="@InputContent"></MudNumericField>
+                        </MudFocusTrap>
+                        break;
+                    default:
+                        <MudFocusTrap>
+                            <MudTextField T="T" @ref="textInput" @bind-Value="@InputContent"></MudTextField>
+                        </MudFocusTrap>
+                        break;
+                }
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="@Color" Variant="Variant.Filled" OnClick="Submit">@SubmitButtonText</MudButton>
+        <MudButton OnClick="Cancel" Color="Color.Secondary">@CancelButtonText</MudButton>
+    </DialogActions>
+</MudDialog>

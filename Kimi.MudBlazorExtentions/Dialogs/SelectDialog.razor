@@ -1,0 +1,15 @@
+﻿@typeparam T
+
+<MudDialog DefaultFocus="DefaultFocus.LastChild">
+    <DialogContent>
+        <MudList T="T">
+            @foreach (var item in SelectionItems)
+            {
+                <MudListItem Text="@item.Text" OnClick="() => {SelectedValue = item.Value;Submit();}" />
+            }
+        </MudList>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@CancelButtonText</MudButton>
+    </DialogActions>
+</MudDialog>
