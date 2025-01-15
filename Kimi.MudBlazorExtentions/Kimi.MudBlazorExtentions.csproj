@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <PackageId>Kimi.MudBlazorExtensions</PackageId>
+        <PackageId>Kimi.MudBlazorExtentions</PackageId>
         <Authors>Kama Zheng</Authors>
         <Description>Extensions of Mudblazor</Description>
         <PackageProjectUrl>https://github.com/kamazheng/Kimi.MudBlazorExtentions</PackageProjectUrl>
