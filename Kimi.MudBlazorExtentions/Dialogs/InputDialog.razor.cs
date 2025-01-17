@@ -25,6 +25,9 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         [Parameter]
         public T? InputContent { get; set; }
 
+        [Parameter]
+        public string[]? TupleLabels { get; set; }
+
         private MudTextField<T>? textInput;
         private MudNumericField<T>? numberInput;
 

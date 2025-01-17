@@ -1,17 +1,15 @@
 ﻿@using Kimi.MudBlazorExtentions.Extensions
 @using MudBlazor
-@typeparam T
-@inherits MudBaseInput<T>
-
-@{
-    var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-    System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
-}
+@inherits MudBaseInput<object>
 
 @if (underlyingType == typeof(DateOnly))
 {
     <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
-                   DateChanged="(e) => {Value = TypeExtensions.ChangeType<T>(DateOnly.FromDateTime((DateTime)e!));ValueChanged.InvokeAsync(Value);}"
+                   DateChanged="(e) => {
+                                    Value =(object)TypeExtensions.ChangeType<DateTime>(DateOnly.FromDateTime((DateTime)e!));
+                                    FieldInfo.SetValue(TupleInstance, Value);
+                                    TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                }"
                    Label="@Label"
                    Margin="@Margin"
                    HelperText="@HelperText"
@@ -25,7 +23,11 @@
 else if (underlyingType == typeof(TimeOnly))
 {
     <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
-                   TimeChanged="(e) => {Value = TypeExtensions.ChangeType<T>(TimeOnly.FromTimeSpan((TimeSpan)e!));ValueChanged.InvokeAsync(Value);}"
+                   TimeChanged="(e) => {
+                                    Value = (object)TypeExtensions.ChangeType<DateTime>(TimeOnly.FromTimeSpan((TimeSpan)e!));
+                                    FieldInfo.SetValue(TupleInstance, Value);
+                                    TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                }"
                    Label="@Label"
                    Margin="@Margin"
                    HelperText="@HelperText"
@@ -38,7 +40,7 @@ else if (underlyingType == typeof(TimeOnly))
 }
 else
 {
-    switch (typeCode)
+    switch (TypeCode)
     {
         case TypeCode.DateTime:
             <MudGrid>
@@ -47,9 +49,10 @@ else
                                    DateChanged="(e) => {
                                         var date = e ?? DateTime.Now;
                                         var time = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay;
-                                        Value = TypeExtensions.ChangeType<T>(date.Date + time);
-                                        ValueChanged.InvokeAsync(Value);
-                                   }"
+                                        Value =(object)TypeExtensions.ChangeType<DateTime>(date.Date + time);
+                                        FieldInfo.SetValue(TupleInstance, Value);
+                                        TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                        }"
                                    Label="@Label"
                                    Margin="@Margin"
                                    HelperText="@HelperText"
@@ -65,8 +68,9 @@ else
                                    TimeChanged="(e) => {
                                         var time = e ?? TimeSpan.Zero;
                                         var date = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).Date;
-                                        Value = TypeExtensions.ChangeType<T>(date + time);
-                                        ValueChanged.InvokeAsync(Value);
+                                        Value = (object)TypeExtensions.ChangeType<DateTime>(date + time);
+                                        FieldInfo.SetValue(TupleInstance, Value);
+                                        TupleInstanceChanged.InvokeAsync(TupleInstance);
                                    }"
                                    Label="@Label"
                                    Margin="@Margin"
@@ -81,7 +85,15 @@ else
             </MudGrid>
             break;
         case TypeCode.Boolean:
-            <MudCheckBox T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
+            <MudCheckBox T="bool?"
+                         Label="@Label"
+                         LabelPosition="LabelPosition.End"
+                         Value="@((bool?)Value)"
+                         ValueChanged="(e) => {
+                                        Value = (object)TypeExtensions.ChangeType<bool>(e);
+                                        FieldInfo.SetValue(TupleInstance, Value);
+                                        TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                   }"
                          Disabled="Disabled"
                          ReadOnly="ReadOnly"
                          @attributes="AdditionalAttributes"></MudCheckBox>
@@ -92,7 +104,13 @@ else
         case TypeCode.Int16:
         case TypeCode.Int32:
         case TypeCode.Int64:
-            <MudNumericField T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
+            <MudNumericField T="double"
+                             Value="@(Value == null ? 0:(double)Value)"
+                             ValueChanged="(e) => {
+                                    Value = e;
+                                    FieldInfo.SetValue(TupleInstance, Value);
+                                    TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                }"
                              Label="@Label"
                              Margin="@Margin"
                              HelperText="@HelperText"
@@ -106,7 +124,12 @@ else
                              @attributes="AdditionalAttributes"></MudNumericField>
             break;
         default:
-            <MudTextField T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
+            <MudTextField T="string" Value="@(Value==null? "":Value.ToString())"
+                          ValueChanged="(e) => {
+                                    Value = e;
+                                    FieldInfo.SetValue(TupleInstance, Value);
+                                    TupleInstanceChanged.InvokeAsync(TupleInstance);
+                                }"
                           Label="@Label"
                           Typo="@Typo"
                           Margin="@Margin"
@@ -118,16 +141,7 @@ else
                           ReadOnly="ReadOnly"
                           FullWidth="FullWidth"
                           Immediate="Immediate"
-                          Clearable="Clearable"
                           @attributes="AdditionalAttributes"></MudTextField>
             break;
     }
-}
-
-@code {
-
-    [Parameter]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-    [Parameter]
-    public bool Clearable { get; set; }
 }

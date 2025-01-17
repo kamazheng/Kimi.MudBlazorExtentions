@@ -90,8 +90,9 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         /// <param name="width">The width</param>
         /// <param name="submitBtnText"></param>
         /// <param name="cancelBtnText"></param>
+        /// <param name="labels">if T is tuple, this is for the tuple field label</param>
         /// <returns>The dialog result</returns>
-        public static async Task<T?> InputBoxAsync<T>(this IDialogService dialogService, string title, string contentText, T? inputContent = default, Color color = Color.Info, MaxWidth width = MaxWidth.Small, string submitBtnText = "Submit", string cancelBtnText = "Cancel")
+        public static async Task<T?> InputBoxAsync<T>(this IDialogService dialogService, string title, string contentText, T? inputContent = default, Color color = Color.Info, MaxWidth width = MaxWidth.Small, string submitBtnText = "Submit", string cancelBtnText = "Cancel", string[]? labels = default)
         {
             if (typeof(T) == typeof(DateTime) && (inputContent == null || (DateTime)(object)inputContent == DateTime.MinValue))
             {
@@ -103,7 +104,8 @@ namespace Kimi.MudBlazorExtentions.Dialogs
                         {nameof(InputDialog<int>.InputContent), inputContent },
                         {nameof(InputDialog<int>.SubmitButtonText), submitBtnText },
                         {nameof(InputDialog<int>.CancelButtonText), cancelBtnText },
-                        {nameof(InputDialog<int>.Color), color }
+                        {nameof(InputDialog<int>.TupleLabels), labels },
+                        {nameof(InputDialog<int>.Color), color },
                     };
             var options = new DialogOptions { CloseButton = true, MaxWidth = width, FullWidth = true };
             var dialog = dialogService.Show<InputDialog<T>>(title, parameters, options);

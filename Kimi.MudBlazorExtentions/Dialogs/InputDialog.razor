@@ -1,67 +1,43 @@
 ﻿@using Microsoft.AspNetCore.Components;
 @using Kimi.MudBlazorExtentions.Extensions;
+@using Kimi.MudBlazorExtentions.Generics;
 @typeparam T
 
 <MudDialog DefaultFocus="DefaultFocus.Element">
     <DialogContent>
-        <MudText>@ContentText</MudText>
+        <MudText Class="mb-3">@ContentText</MudText>
         @{
             var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-            System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
-            if (underlyingType == typeof(DateOnly))
+            var properties = underlyingType.IsClass && underlyingType != typeof(string) ? underlyingType.GetProperties() : null;
+        }
+        @if (properties != null && properties.Length > 0)
+        {
+            foreach (var property in properties)
             {
-                <MudDatePicker Date="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()))"
-                               DateChanged="(e) => InputContent = TypeExtensions.ChangeType<T>(DateOnly.FromDateTime((DateTime)e!))" />
-            }else if(underlyingType == typeof(TimeOnly))
-            {
-                <MudTimePicker Time="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
-                               TimeChanged="(e) => InputContent = TypeExtensions.ChangeType<T>(TimeOnly.FromTimeSpan((TimeSpan)e!))" />
+                <DynamicInput ClassInstance="@InputContent" PropertyInfo="@property" ClassInstanceChanged="e => 
+                                {
+                                    InputContent = TypeExtensions.ChangeType<T?>(e);
+                                }" />
             }
-            else
+        }
+        else if (underlyingType.IsTuple())
+        {
+            var fields = underlyingType.GetFields();
+            for (int i = 0; i < fields.Length; i++)
             {
-                switch (typeCode)
-                {
-                    case TypeCode.DateTime:
-                        <MudGrid>
-                            <MudItem xs="12" sm="6">
-                                <MudDatePicker Date="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()))"
-                                               DateChanged="(e) => {
-                                           var date = e ?? DateTime.Now;
-                                           var time = DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay;
-                                           InputContent = TypeExtensions.ChangeType<T>(date.Date + time);
-                                       }" />
-                            </MudItem>
-                            <MudItem xs="12" sm="6">
-
-                                <MudTimePicker Time="@(DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
-                                               TimeChanged="(e) => {
-                                           var time = e ?? TimeSpan.Zero;
-                                           var date = DateTime.Parse(InputContent?.ToString() ?? DateTime.Now.ToString()).Date;
-                                           InputContent = TypeExtensions.ChangeType<T>(date + time);
-                                       }" />
-                            </MudItem>
-                        </MudGrid>
-                        break;
-                    case TypeCode.Boolean:
-                        <MudCheckBox T="T" @bind-Value="@InputContent"></MudCheckBox>
-                        break;
-                    case TypeCode.Single:
-                    case TypeCode.Double:
-                    case TypeCode.Decimal:
-                    case TypeCode.Int16:
-                    case TypeCode.Int32:
-                    case TypeCode.Int64:
-                        <MudFocusTrap>
-                            <MudNumericField @ref="numberInput" T="T" @bind-Value="@InputContent"></MudNumericField>
-                        </MudFocusTrap>
-                        break;
-                    default:
-                        <MudFocusTrap>
-                            <MudTextField T="T" @ref="textInput" @bind-Value="@InputContent"></MudTextField>
-                        </MudFocusTrap>
-                        break;
-                }
+                var field = fields[i];
+                var label = TupleLabels == null ? field.Name : TupleLabels[i];
+                <FieldInfoInput TupleInstance="InputContent" FieldInfo="field" Label="@(label)" 
+                     TupleInstanceChanged="
+                            e => {
+                                InputContent = TypeExtensions.ChangeType<T?>(e);
+                            }"
+                 ></FieldInfoInput>
             }
+        }
+        else
+        {
+            <GenericInput @bind-Value="@InputContent"></GenericInput>
         }
     </DialogContent>
     <DialogActions>
