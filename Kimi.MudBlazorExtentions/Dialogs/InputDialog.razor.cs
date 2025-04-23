@@ -28,9 +28,6 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         [Parameter]
         public string[]? TupleLabels { get; set; }
 
-        private MudTextField<T>? textInput;
-        private MudNumericField<T>? numberInput;
-
         private void Submit() => MudDialog.Close(DialogResult.Ok(InputContent));
 
         private void Cancel() => MudDialog.Cancel();

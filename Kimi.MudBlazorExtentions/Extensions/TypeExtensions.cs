@@ -15,12 +15,6 @@ namespace Kimi.MudBlazorExtentions.Extensions
     {
         #region Methods
 
-        /// <summary>
-        /// The ChangeType
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value<see cref="object"/></param>
-        /// <returns>The <see cref="T?"/></returns>
         internal static T? ChangeType<T>(object value)
         {
             var t = typeof(T);

@@ -1,0 +1,56 @@
+﻿@using Kimi.MudBlazorExtentions.Extensions
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Forms
+@typeparam T
+
+<MudGrid Spacing="1">
+    <MudItem xs="12">
+        <MudCard Class="py-2">
+            @if (ShowActionBar)
+            {
+                <MudToolBar Style="display:flex;">
+                    @if (AllowEdit)
+                    {
+                        <ErrorCatchLoadingButton Label="@SubmitLable" Icon="@Icons.Material.Filled.Check"
+                                                 OnClick="@(()=>OnSubmit.InvokeAsync(this))"
+                                                 Variant="Variant.Filled" Color="Color.Primary" Class="ml-2" Disabled="@(IsReadOnly)">
+                        </ErrorCatchLoadingButton>
+                    }
+                    @if (UserActions != null)
+                    {
+                        @UserActions(this)
+                    }
+                    <MudSpacer />
+                    @if (AllowDelete)
+                    {
+                        <ErrorCatchLoadingButton Label="@DeleteLable" Icon="@Icons.Material.Filled.Delete"
+                                                 Variant="Variant.Filled" Color="Color.Error"
+                                                 OnClick="@(()=>OnDelete.InvokeAsync(this))" Disabled="@IsReadOnly">
+                        </ErrorCatchLoadingButton>
+                    }
+                </MudToolBar>
+            }
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12">
+        <div id="@baseCrudFormId" style="padding-top:10px;">
+            <MudCard Style="overflow-y:auto;height:100%">
+                <MudForm Model="@Model" style="width:100%;" @ref="EditForm" Validation="@Validation" ValidationDelay="0">
+                    @if (ShowValidationSummary)
+                    {
+                        <ValidationSummary />
+                    }
+                    @if (ChildContent != null)
+                    {
+                        @ChildContent(this)
+                    }
+                </MudForm>
+                @if (FooterContent != null)
+                {
+                    @FooterContent(this)
+                }
+            </MudCard>
+        </div>
+    </MudItem>
+</MudGrid>

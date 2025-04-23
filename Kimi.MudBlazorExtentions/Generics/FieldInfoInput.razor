@@ -90,7 +90,7 @@ else
                          LabelPosition="LabelPosition.End"
                          Value="@((bool?)Value)"
                          ValueChanged="(e) => {
-                                        Value = (object)TypeExtensions.ChangeType<bool>(e);
+                                        Value = (object)TypeExtensions.ChangeType<bool>(e ?? false);
                                         FieldInfo.SetValue(TupleInstance, Value);
                                         TupleInstanceChanged.InvokeAsync(TupleInstance);
                                    }"

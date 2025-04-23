@@ -54,6 +54,16 @@ namespace Kimi.MudBlazorExtentions.Snackbar
             snackBar.Add(msg, Severity.Warning);
         }
 
+        /// <summary>
+        /// The Warning
+        /// </summary>
+        /// <param name="snackBar">The snackBar<see cref="ISnackbar"/></param>
+        /// <param name="msg">The msg<see cref="string"/></param>
+        public static void Success(this ISnackbar snackBar, string msg)
+        {
+            snackBar.Add(msg, Severity.Success);
+        }
+
         #endregion
     }
 }

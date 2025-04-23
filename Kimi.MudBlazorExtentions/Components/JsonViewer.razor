@@ -1,0 +1,100 @@
+﻿@using System.Text.Json
+@using System.Text.RegularExpressions
+
+@code {
+    [Parameter, EditorRequired]
+    public string JsonData { get; set; } = null!;
+    [Parameter]
+    public Typo Typo { get; set; } = Typo.body2;
+
+    private string formattedJson = null!;
+
+    protected override void OnParametersSet()
+    {
+        formattedJson = JsonSerializer.Serialize(JsonDocument.Parse(JsonData), new JsonSerializerOptions { WriteIndented = true });
+    }
+
+    private string GetCssClass(string value)
+    {
+        if (value.StartsWith('"'))
+        {
+            return "string";
+        }
+        else if (value == "true" || value == "false")
+        {
+            return "boolean";
+        }
+        else if (value == "null")
+        {
+            return "null";
+        }
+        else if (decimal.TryParse(value, out _))
+        {
+            return "number";
+        }
+        return "";
+    }
+
+    private (string key, string value) SplitKeyValue(string line)
+    {
+        var match = Regex.Match(line, @"^(?<key>[^:]+):\s*(?<value>.+)$");
+        if (match.Success)
+        {
+            return (match.Groups["key"].Value, match.Groups["value"].Value);
+        }
+        return (line, string.Empty);
+    }
+
+}
+
+<div class="json-viewer">
+    @foreach (var line in formattedJson.Split('\n'))
+    {
+        var (key, value) = SplitKeyValue(line);
+        if (!string.IsNullOrEmpty(value))
+        {
+            <MudText Typo="@Typo">@key: <span class="@GetCssClass(value)">@value</span></MudText>
+        }
+        else
+        {
+            <div>@line</div>
+        }
+    }
+</div>
+
+
+
+<style>
+    .json-viewer {
+        font-family: monospace;
+        white-space: pre;
+    }
+
+        .json-viewer div {
+            color: #333;
+        }
+
+        .json-viewer .property {
+            color: #007acc;
+        }
+
+        .json-viewer .value {
+            color: #d14;
+        }
+
+        .json-viewer .string {
+            color: #a31515;
+        }
+
+        .json-viewer .number {
+            color: #098658;
+        }
+
+        .json-viewer .boolean {
+            color: #0000ff;
+        }
+
+        .json-viewer .null {
+            color: #808080;
+        }
+</style>

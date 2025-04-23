@@ -1,0 +1,59 @@
+﻿<MudContainer Class="pa-3">
+    <MudStack Spacing="2" Class="ml-5 mt-3">
+        <MudText Typo="Typo.h3">ERROR OCCURRED</MudText>
+        <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Error">
+            @CurrentException?.Message
+        </MudAlert>
+        @if (!string.IsNullOrEmpty(DetailError))
+        {
+            <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Info">
+                @DetailError
+            </MudAlert>
+        }
+        <MudItem>
+            @if (IfDialog != true)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mr-3" OnClick="ClearError">Clear Error</MudButton>
+            }
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ReadMore" Disabled="@disable">Read More</MudButton>
+        </MudItem>
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Exception? CurrentException { get; set; }
+
+    [Parameter]
+    public ErrorBoundaryBase? errorBoundary { get; set; }
+
+    [Parameter]
+    public bool? IfDialog { get; set; } = false;
+
+    [Inject]
+    public NavigationManager? _navigation { get; set; }
+
+    public string? DetailError { get; set; }
+    public bool disable { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+        var errorBoundary = CurrentException;
+        base.OnInitialized();
+    }
+    private void ReadMore(MouseEventArgs e)
+    {
+        DetailError = CurrentException?.ToString() ?? null;
+        disable = true;
+    }
+
+    private void ClearError(MouseEventArgs e)
+    {
+        errorBoundary?.Recover();
+        if (_navigation is not null)
+        {
+            _navigation.Refresh(forceReload: true);
+        }
+    }
+}
+

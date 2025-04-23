@@ -109,7 +109,7 @@
                                  LabelPosition="LabelPosition.End"
                                  Value="@((bool?)Value)"
                                  ValueChanged="(e) => {
-                                        Value = (object)TypeExtensions.ChangeType<bool>(e);
+                                        Value = (object)TypeExtensions.ChangeType<bool>(e ?? false);
                                         ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                         ClassInstanceChanged.InvokeAsync(ClassInstance);
                                    }"

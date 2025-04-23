@@ -1,0 +1,122 @@
+﻿@using System.Reflection
+@using Kimi.MudBlazorExtentions.Extensions
+@inherits MudTextField<string>
+@typeparam T
+
+<div>
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@if (Properties?.Any() == true)
+{
+    <MudPopover RelativeWidth="true" Open="@_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways"
+                AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Paper="true">
+        <MudCard Elevation="25" Class="px-3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Filter</MudText>
+                </CardHeaderContent>
+                <CardHeaderActions>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Default" OnClick="TogglePopover" />
+                </CardHeaderActions>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12">
+                        <MudSelect Label="Field" T="PropertyInfo" AnchorOrigin="Origin.BottomCenter" Style="z-index:3000 !important"
+                                   Value="@SelectedProperty" Text="@SelectedProperty.GetDisplayLabel()" ValueChanged="@FieldSelectedValuesChanged"
+                                   Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                            @foreach (var item in Properties)
+                            {
+                                var itemUnderlyingType = Nullable.GetUnderlyingType(item.PropertyType) ?? item.PropertyType;
+                                System.TypeCode itemTypeCode = Type.GetTypeCode(itemUnderlyingType);
+                                if(itemTypeCode != TypeCode.Object)
+                                {
+                                <MudSelectItem T="PropertyInfo" Value="@item" >@item.GetDisplayLabel()</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSelect T="string" Label="Operator" AnchorOrigin="Origin.BottomCenter" @bind-Value="SelectedOperator" 
+                            Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                            @foreach (var op in Operators)
+                            {
+                                <MudSelectItem T="string" Value="@op">@op</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
+                        @{
+                            var underlyingType = Nullable.GetUnderlyingType(SelectedProperty.PropertyType) ?? SelectedProperty.PropertyType;
+                            System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
+                            @if (underlyingType == typeof(DateOnly))
+                            {
+                                <MudDatePicker Label="@Value" @bind-Value="InputValue" Variant="Variant.Text" Margin="Margin.Dense">
+                                </MudDatePicker>
+                            }
+                            else if (underlyingType == typeof(TimeOnly))
+                            {
+                                <MudTimePicker Label="@Value" @bind-Value="InputValue" Variant="Variant.Text" Margin="Margin.Dense">
+                                </MudTimePicker>
+                            }
+                            else
+                            {
+                                switch (typeCode)
+                                {
+                                    case TypeCode.DateTime:
+                                        <MudTextField Label="@Value" @bind-Value="InputValue" InputType="InputType.DateTimeLocal" 
+                                            Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                                        </MudTextField>
+                                        break;
+                                    case TypeCode.Boolean:
+                                        <MudSelect T="string" AnchorOrigin="Origin.BottomCenter" Label="Value" @bind-Value="InputValue"
+                                                   Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                                            <MudSelectItem Value="@("true")">Yes</MudSelectItem>
+                                            <MudSelectItem Value="@("false")">No</MudSelectItem>
+                                            <MudSelectItem Value="@("")">@("  ")</MudSelectItem>
+                                        </MudSelect>
+                                        break;
+                                    case TypeCode.Single:
+                                    case TypeCode.Double:
+                                    case TypeCode.Decimal:
+                                    case TypeCode.Int16:
+                                    case TypeCode.Int32:
+                                    case TypeCode.Int64:
+                                        <MudTextField Label="Value" @bind-Value="InputValue" InputType="InputType.Number"
+                                                      Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                                        </MudTextField>
+                                        break;
+                                    case TypeCode.Object:
+                                        break;
+                                    default:
+                                        <MudTextField Label="Value" @bind-Value="InputValue" T="string"
+                                                      Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
+                                        </MudTextField>
+                                        break;
+                                }
+                            }
+                        }
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudButton Variant="Variant.Outlined" FullWidth=true Size="Size.Small" OnClick="FilterAndConfirm" Class="mt-2"
+                                   Disabled="@((SelectedProperty == default)||(string.IsNullOrEmpty(SelectedOperator)))"
+                        >
+                            @AndLabel
+                        </MudButton>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudButton Variant="Variant.Outlined" FullWidth=true Size="Size.Small" OnClick="FilterOrConfirm" Class="mt-2"
+                                   Disabled="@((SelectedProperty == default)||(string.IsNullOrEmpty(SelectedOperator)))">
+                            @OrLabel
+                        </MudButton>
+                    </MudItem>
+
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudPopover>
+
+}
+</div>

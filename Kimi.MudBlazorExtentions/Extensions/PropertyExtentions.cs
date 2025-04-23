@@ -79,7 +79,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// </summary>
         /// <param name="expression">The property expression.</param>
         /// <returns>The display label, or null if not found.</returns>
-        public static string? GetDisplayLabel(Expression<Func<object>> expression)
+        public static string GetDisplayLabel(Expression<Func<object?>> expression)
         {
             var property = GetPropertyInfo(expression.Body);
             return property.GetDisplayLabel();
@@ -91,7 +91,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="expression">The property expression.</param>
         /// <returns>The display label, or null if not found.</returns>
-        public static string? GetDisplayLabel<T>(Expression<Func<T, object>> expression)
+        public static string GetDisplayLabel<T>(Expression<Func<T, object?>> expression)
         {
             var property = GetPropertyInfo(expression.Body);
             return property.GetDisplayLabel();
@@ -206,25 +206,6 @@ namespace Kimi.MudBlazorExtentions.Extensions
         }
 
         /// <summary>
-        /// Gets the value of the specified property by using reflection.
-        /// </summary>
-        /// <typeparam name="Tobj">The type of the object.</typeparam>
-        /// <param name="self">The object instance.</param>
-        /// <param name="propertyName">The name of the property.</param>
-        /// <returns>The value of the property, or null if not found.</returns>
-        public static object? GetPropertyValueByReflection<Tobj>(this Tobj self, string propertyName)
-        {
-            try
-            {
-                return self.GetType().GetProperty(propertyName)?.GetValue(self);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
         /// Determines whether the specified property is human-readable.
         /// </summary>
         /// <param name="property">The property information.</param>
@@ -278,7 +259,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// <param name="value">The value to set.</param>
         public static void SetPropertyValue<Tobj>(this Tobj self, string propertyName, object? value)
         {
-            if (self == null) return;
+            if (self is null) return;
             if (value == default || string.IsNullOrEmpty(value.ToString()))
             {
                 self.GetType().GetProperty(propertyName)?.SetValue(self, default);
