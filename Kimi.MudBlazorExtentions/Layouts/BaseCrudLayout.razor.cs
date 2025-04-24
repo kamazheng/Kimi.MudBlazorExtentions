@@ -68,6 +68,18 @@ public partial class BaseCrudLayout<T>
     [Category(CategoryTypes.FormComponent.Validation)]
     public object? Validation { get; set; }
 
+    /// <summary>
+    /// Use the Floating action button instead of normal button.
+    /// </summary>
+    [Parameter]
+    public bool UseFab { get; set; } = false;
+
+    /// <summary>
+    /// Fab to be verical with label or not.
+    /// </summary>
+    [Parameter]
+    public bool VirticalFab { get; set; } = true;
+
     private string baseCrudFormId = TagIdGenerator.Create();
     public MudForm? EditForm { get; set; }
 

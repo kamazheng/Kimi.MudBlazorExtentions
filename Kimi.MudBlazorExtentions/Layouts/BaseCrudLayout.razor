@@ -8,13 +8,22 @@
         <MudCard Class="py-2">
             @if (ShowActionBar)
             {
-                <MudToolBar Style="display:flex;">
+                <MudToolBar Style="display:flex;" Class="pt-2">
                     @if (AllowEdit)
                     {
-                        <ErrorCatchLoadingButton Label="@SubmitLable" Icon="@Icons.Material.Filled.Check"
-                                                 OnClick="@(()=>OnSubmit.InvokeAsync(this))"
-                                                 Variant="Variant.Filled" Color="Color.Primary" Class="ml-2" Disabled="@(IsReadOnly)">
-                        </ErrorCatchLoadingButton>
+                        if (UseFab)
+                        {
+                            <ErrorCatchFab Label="@SubmitLable" StartIcon="@Icons.Material.Outlined.Check" Size="Size.Medium" Vertical="@VirticalFab"
+                                                  OnClick="@(()=>OnSubmit.InvokeAsync(this))"
+                                                  Color="Color.Primary" Disabled="@(IsReadOnly)"></ErrorCatchFab>
+                        }
+                        else
+                        {
+                            <ErrorCatchLoadingButton Label="@SubmitLable" Icon="@Icons.Material.Filled.Check"
+                                                     OnClick="@(()=>OnSubmit.InvokeAsync(this))"
+                                                     Variant="Variant.Filled" Color="Color.Primary" Class="ml-2" Disabled="@(IsReadOnly)">
+                            </ErrorCatchLoadingButton>
+                        }
                     }
                     @if (UserActions != null)
                     {
@@ -23,10 +32,20 @@
                     <MudSpacer />
                     @if (AllowDelete)
                     {
-                        <ErrorCatchLoadingButton Label="@DeleteLable" Icon="@Icons.Material.Filled.Delete"
-                                                 Variant="Variant.Filled" Color="Color.Error"
-                                                 OnClick="@(()=>OnDelete.InvokeAsync(this))" Disabled="@IsReadOnly">
-                        </ErrorCatchLoadingButton>
+                        if (UseFab)
+                        {
+                            <ErrorCatchFab Label="@DeleteLable" StartIcon="@Icons.Material.Outlined.Clear" Size="Size.Medium" Vertical="@VirticalFab"
+                                                  OnClick="@(()=>OnDelete.InvokeAsync(this))"
+                                                  Color="Color.Error" Disabled="@(IsReadOnly)"></ErrorCatchFab>
+                        }
+                        else
+                        {
+                            <ErrorCatchLoadingButton Label="@DeleteLable" Icon="@Icons.Material.Filled.Clear"
+                                                     Variant="Variant.Filled" Color="Color.Error"
+                                                     OnClick="@(()=>OnDelete.InvokeAsync(this))" Disabled="@IsReadOnly">
+                            </ErrorCatchLoadingButton>
+                        }
+
                     }
                 </MudToolBar>
             }
