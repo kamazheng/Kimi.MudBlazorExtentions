@@ -1,4 +1,4 @@
-﻿namespace Kimi.MudBlazorExtentions;
+﻿namespace Kimi.MudBlazorExtentions.Extensions;
 
 public static class TagIdGenerator
 {

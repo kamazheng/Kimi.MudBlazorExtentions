@@ -1,0 +1,120 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div @ref="container" style="@GetStyle()" class="resizable-container">
+    @ChildContent
+    @if (AllowHorizontalResize)
+    {
+        <div @ref="horizontalHandle" class="resize-handle horizontal" @onmousedown="StartHorizontalDrag"></div>
+    }
+    @if (AllowVerticalResize)
+    {
+        <div @ref="verticalHandle" class="resize-handle vertical" @onmousedown="StartVerticalDrag"></div>
+    }
+</div>
+
+@code {
+    private ElementReference container;
+    private ElementReference horizontalHandle;
+    private ElementReference verticalHandle;
+    private double currentWidth;
+    private double currentHeight;
+    private IJSObjectReference? module;
+
+    [Parameter]
+    public bool AllowHorizontalResize { get; set; } = false;
+
+    [Parameter]
+    public bool AllowVerticalResize { get; set; } = false;
+
+    [Parameter]
+    public string InitialWidth { get; set; } = "300px";
+
+    [Parameter]
+    public string InitialHeight { get; set; } = "200px";
+
+    [Parameter]
+    public double MinWidth { get; set; } = 50;
+
+    [Parameter]
+    public double MinHeight { get; set; } = 50;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Dynamically import the JavaScript module
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Kimi.MudBlazorExtentions/resizable.js"
+            );
+
+            // Initialize sizes, converting percentages to pixels if needed
+            currentWidth = await GetInitialSizeInPixels(InitialWidth, "width");
+            currentHeight = await GetInitialSizeInPixels(InitialHeight, "height");
+            StateHasChanged();
+        }
+    }
+
+    private async Task<double> GetInitialSizeInPixels(string size, string dimension)
+    {
+        if (string.IsNullOrWhiteSpace(size))
+        {
+            return dimension == "width" ? 300 : 200; // Default sizes
+        }
+
+        if (size.EndsWith('%'))
+        {
+            var parentSize = await module!.InvokeAsync<double>(
+                "getParentSize",
+                container,
+                dimension == "width" ? "offsetWidth" : "offsetHeight"
+            );
+            var percentage = double.Parse(size.Substring(0, size.Length - 1)) / 100;
+            return parentSize * percentage;
+        }
+        else if (size.EndsWith("px"))
+        {
+            return double.Parse(size.Substring(0, size.Length - 2));
+        }
+        else
+        {
+            throw new ArgumentException("Size must be in 'px' or '%'");
+        }
+    }
+
+    private string GetStyle()
+    {
+        return $"width: {currentWidth}px; height: {currentHeight}px;";
+    }
+
+    private async Task StartHorizontalDrag(MouseEventArgs e)
+    {
+        if (module == null) return;
+        var initialPosition = e.ClientX;
+        await module.InvokeVoidAsync("startDrag", DotNetObjectReference.Create(this), "horizontal", initialPosition, currentWidth);
+    }
+
+    private async Task StartVerticalDrag(MouseEventArgs e)
+    {
+        if (module == null) return;
+        var initialPosition = e.ClientY;
+        await module.InvokeVoidAsync("startDrag", DotNetObjectReference.Create(this), "vertical", initialPosition, currentHeight);
+    }
+
+    [JSInvokable]
+    public void UpdateSize(string direction, double newSize)
+    {
+        if (direction == "horizontal")
+        {
+            currentWidth = Math.Max(newSize, MinWidth);
+        }
+        else if (direction == "vertical")
+        {
+            currentHeight = Math.Max(newSize, MinHeight);
+        }
+        StateHasChanged();
+    }
+}

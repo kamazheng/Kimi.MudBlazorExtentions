@@ -1,4 +1,4 @@
-using Kimi.MudBlazorExtentions.Dialogs;
+using Kimi.MudBlazorExtentions.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
@@ -31,7 +31,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     {
         if (_kimiJsInterop is not null)
         {
-            await _kimiJsInterop.setNotScrollMaxHeightByClass("mud-tabs-panels", 10);
+            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 10);
             await _kimiJsInterop.SetPageTitle(typeof(THomePage).Name);
         }
         if (_stateHasChanged)

@@ -38,25 +38,31 @@ public class KimiJsInterop : IAsyncDisposable
         await module.InvokeAsync<string>("saveAsFile", new object[] { fileName, basw64str });
     }
 
-    public async ValueTask setNotScrollMaxHeight(string id, int desiredMargin)
+    public async ValueTask SetNotScrollMaxHeight(string id, int desiredMargin)
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setNotScrollMaxHeight", new object[] { id, desiredMargin });
     }
 
-    public async ValueTask setNotScrollMaxHeightByClass(string className, int desiredMargin)
+    public async ValueTask SetMinHeightToMaxWindowsHeight(string id, int desiredMargin)
+    {
+        var module = await kimiTask.Value;
+        await module.InvokeAsync<string>("setMinHeightToMaxWindowsHeight", new object[] { id, desiredMargin });
+    }
+
+    public async ValueTask SetNotScrollMaxHeightByClass(string className, int desiredMargin)
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setNotScrollMaxHeightByClass", new object[] { className, desiredMargin });
     }
 
-    public async ValueTask setDivReadonlyByDivId(string id, bool isReadOnly)
+    public async ValueTask SetDivReadonlyByDivId(string id, bool isReadOnly)
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setDivReadOnlyByDivId", new object[] { id, isReadOnly });
     }
 
-    public async ValueTask setDivReadonlyByDivClassName(string divClassName, bool isReadOnly)
+    public async ValueTask SetDivReadonlyByDivClassName(string divClassName, bool isReadOnly)
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setDivReadOnlyByDivClassName", new object[] { divClassName, isReadOnly });

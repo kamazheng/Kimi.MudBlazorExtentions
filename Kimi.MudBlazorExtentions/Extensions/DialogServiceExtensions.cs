@@ -3,9 +3,10 @@
 // Created          : 01/15/2025
 // ***********************************************************************
 
+using Kimi.MudBlazorExtentions.Dialogs;
 using MudBlazor;
 
-namespace Kimi.MudBlazorExtentions.Dialogs
+namespace Kimi.MudBlazorExtentions.Extensions
 {
     /// <summary>
     /// Defines the <see cref="DialogServiceExtensions" />
@@ -192,7 +193,7 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         public static async Task<T> RequiredInputBoxAsync<T>(this IDialogService dialogService, string title, string contentText, T? inputContent = default, Color color = Color.Info, MaxWidth width = MaxWidth.Small
              , string submitBtnText = "Submit", string cancelBtnText = "Cancel")
         {
-            var tResult = await dialogService.InputBoxAsync<T>(title, contentText, inputContent, color, width, submitBtnText, cancelBtnText);
+            var tResult = await dialogService.InputBoxAsync(title, contentText, inputContent, color, width, submitBtnText, cancelBtnText);
             if (tResult is null)
             {
                 throw new InvalidDataException("No input has been provided");

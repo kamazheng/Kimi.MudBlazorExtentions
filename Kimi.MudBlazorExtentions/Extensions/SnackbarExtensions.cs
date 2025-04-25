@@ -5,7 +5,7 @@
 
 using MudBlazor;
 
-namespace Kimi.MudBlazorExtentions.Snackbar
+namespace Kimi.MudBlazorExtentions.Extensions
 {
     /// <summary>
     /// Defines the <see cref="SnackbarExtensions" />

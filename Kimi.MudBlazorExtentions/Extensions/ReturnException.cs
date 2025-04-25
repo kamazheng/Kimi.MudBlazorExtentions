@@ -1,4 +1,4 @@
-﻿namespace Kimi.MudBlazorExtentions.Dialogs;
+﻿namespace Kimi.MudBlazorExtentions.Extensions;
 
 public class ReturnException : Exception
 {

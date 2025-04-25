@@ -1,11 +1,10 @@
-﻿using Kimi.MudBlazorExtentions.Dialogs;
-using Kimi.MudBlazorExtentions.Snackbar;
+﻿using Kimi.MudBlazorExtentions.Extensions;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using MudBlazor;
 
-namespace Kimi.MudBlazorExtentions.Layouts;
+namespace Kimi.MudBlazorExtentions.Buttons;
 
 public class ErrorCatchLoadingButton : MudButton
 {
@@ -25,20 +24,11 @@ public class ErrorCatchLoadingButton : MudButton
 
     [Parameter, EditorRequired]
     public string Label { get; set; } = "Submit"; // Button label
+    private ProcessingState ProcessingState { get; set; } = new();
 
-    private bool _isProcessing; // Backing field for IsProcessing
-
-    public bool IsProcessing
+    protected override async Task OnClickHandler(MouseEventArgs ev)
     {
-        get => _isProcessing;
-        private set
-        {
-            if (_isProcessing != value)
-            {
-                _isProcessing = value;
-                InvokeAsync(StateHasChanged); // Notify Blazor to re-render the component
-            }
-        }
+        await this.ErrorCatchOnClickHandler(_semaphore, Snackbar, DialogService, ProcessingState, () => InvokeAsync(StateHasChanged));
     }
     protected override async Task OnInitializedAsync()
     {
@@ -47,57 +37,17 @@ public class ErrorCatchLoadingButton : MudButton
         await Task.CompletedTask;
     }
 
-    protected override async Task OnClickHandler(MouseEventArgs ev)
-    {
-        // Attempt to acquire the semaphore without blocking
-        if (!await _semaphore.WaitAsync(0)) return;
-        try
-        {
-
-            if (IsProcessing) return;
-            IsProcessing = true; // Set the loading state
-            await base.OnClickHandler(ev);
-        }
-        catch (ReturnException returnEx) when (Snackbar is not null)
-        {
-            Snackbar.Info(returnEx.Message);
-        }
-        catch (Exception ex) when (DialogService is not null)
-        {
-            var parameters = new DialogParameters<MyErrorContent>
-            {
-                { x => x.CurrentException, ex },
-                { x => x.IfDialog, true }
-            };
-
-            var options = new DialogOptions
-            {
-                CloseButton = true,
-                MaxWidth = MaxWidth.Large,
-                FullWidth = true
-            };
-
-            var dialog = await DialogService.ShowAsync<MyErrorContent>("", parameters, options);
-            await dialog.Result;
-        }
-        finally
-        {
-            IsProcessing = false; // Reset the loading state
-            _semaphore.Release();
-        }
-    }
-
     protected override void BuildRenderTree(RenderTreeBuilder __builder)
     {
         if (Display)
         {
             // Set the ChildContent for the base button
-            ChildContent = (RenderFragment)(builder =>
+            ChildContent = builder =>
             {
                 builder.OpenElement(0, "span");
                 builder.AddAttribute(1, "class", "d-flex align-center");
 
-                if (IsProcessing)
+                if (ProcessingState.IsProcessing)
                 {
                     // Render loading animation and text
                     builder.OpenComponent<MudProgressCircular>(2);
@@ -124,7 +74,7 @@ public class ErrorCatchLoadingButton : MudButton
                 }
 
                 builder.CloseElement(); // Close the <span> element
-            });
+            };
 
             // Call the base BuildRenderTree to render the button with the updated ChildContent
             base.BuildRenderTree(__builder);

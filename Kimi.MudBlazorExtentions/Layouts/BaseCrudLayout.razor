@@ -1,4 +1,5 @@
-﻿@using Kimi.MudBlazorExtentions.Extensions
+﻿@using Kimi.MudBlazorExtentions.Buttons
+@using Kimi.MudBlazorExtentions.Extensions
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam T
@@ -13,9 +14,9 @@
                     {
                         if (UseFab)
                         {
-                            <ErrorCatchFab Label="@SubmitLable" StartIcon="@Icons.Material.Outlined.Check" Size="Size.Medium" Vertical="@VirticalFab"
+                            <ErrorCatchLoadingFab Label="@SubmitLable" StartIcon="@Icons.Material.Outlined.Check" Size="Size.Medium" Vertical="@VirticalFab"
                                                   OnClick="@(()=>OnSubmit.InvokeAsync(this))"
-                                                  Color="Color.Primary" Disabled="@(IsReadOnly)"></ErrorCatchFab>
+                                                  Color="Color.Primary" Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
                         }
                         else
                         {
@@ -34,9 +35,9 @@
                     {
                         if (UseFab)
                         {
-                            <ErrorCatchFab Label="@DeleteLable" StartIcon="@Icons.Material.Outlined.Clear" Size="Size.Medium" Vertical="@VirticalFab"
+                            <ErrorCatchLoadingFab Label="@DeleteLable" StartIcon="@Icons.Material.Outlined.Clear" Size="Size.Medium" Vertical="@VirticalFab"
                                                   OnClick="@(()=>OnDelete.InvokeAsync(this))"
-                                                  Color="Color.Error" Disabled="@(IsReadOnly)"></ErrorCatchFab>
+                                                  Color="Color.Error" Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
                         }
                         else
                         {
@@ -53,8 +54,8 @@
     </MudItem>
 
     <MudItem xs="12">
-        <div id="@baseCrudFormId" style="padding-top:10px;">
-            <MudCard Style="overflow-y:auto;height:100%">
+        <div id="@baseCrudFormId" style="padding-top:10px;overflow-y:auto;">
+            <MudCard Style="height:100%">
                 <MudForm Model="@Model" style="width:100%;" @ref="EditForm" Validation="@Validation" ValidationDelay="0">
                     @if (ShowValidationSummary)
                     {

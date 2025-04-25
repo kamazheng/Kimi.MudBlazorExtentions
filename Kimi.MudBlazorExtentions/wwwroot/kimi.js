@@ -48,6 +48,18 @@ export function setNotScrollMaxHeight(id, desiredMargin) {
     }
 }
 
+export function setMinHeightToMaxWindowsHeight(id, desiredMargin) {
+    const element = document.getElementById(id);
+    if (element) {
+        const viewportHeight = window.innerHeight;
+        const absoluteTop = getAbsoluteTop(element);
+        if (absoluteTop !== null) {
+            const height = viewportHeight - absoluteTop - desiredMargin;
+            element.style.minHeight = height + 'px';
+        }
+    }
+}
+
 export function setNotScrollMaxHeightByClass(className, desiredMargin) {
     const elements = document.getElementsByClassName(className);
     if (elements.length > 0) {

@@ -1,0 +1,30 @@
+﻿.resizable-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.resize-handle {
+    background-color: #ccc;
+    opacity: 0.5;
+    position: absolute;
+}
+
+    .resize-handle:hover {
+        opacity: 1;
+    }
+
+    .resize-handle.horizontal {
+        right: 0;
+        top: 0;
+        width: 5px;
+        height: 100%;
+        cursor: ew-resize;
+    }
+
+    .resize-handle.vertical {
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        cursor: ns-resize;
+    }
