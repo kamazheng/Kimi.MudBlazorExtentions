@@ -13,8 +13,10 @@
                      Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
     <MudNumericField T="int" Value="@this.TableSelectorModel.PageSize" ValueChanged="PageSizeChanged" Label="@PageSizeLabel" Style="min-width:100px;"
                      Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
-    <DynamicOrderBy T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.OrderBy"
+    <DynamicOrderBy T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.OrderBy" Label="@OrderByLabel"
+                    ZIndex="@ZIndex" AscendLabel="@AscendLabel" DescendLabel="@DescendLabel"
                     ValueChanged="OrderByChanged" Style="min-width:100px;"></DynamicOrderBy>
-    <DynamicFilter T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.Filter"
+    <DynamicFilter T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.Filter" Label="@FilterLabel"
+                   ZIndex="@ZIndex" AndLabel="@AndLabel" OrLabel="@OrLabel" FieldLabel="@FieldLabel" OperatorLabel="@OperatorLabel" ValueLabel="@ValueLabel"
         ValueChanged="FilterChanged" Style="min-width:250px"></DynamicFilter>
 </MudStack>

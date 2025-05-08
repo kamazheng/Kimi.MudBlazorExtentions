@@ -20,6 +20,9 @@ public partial class DynamicOrderBy<T> : MudTextField<string>
     public int? ZIndex { get; set; }
 
     [Parameter]
+    public string? FieldLabel { get; set; } = "Field";
+
+    [Parameter]
     public string? AscendLabel { get; set; }
 
     [Parameter]

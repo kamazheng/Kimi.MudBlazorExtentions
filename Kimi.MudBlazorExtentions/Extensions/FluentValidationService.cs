@@ -1,9 +1,5 @@
 ﻿// ***********************************************************************
-// <copyright file="FluentValidationService.cs" company="Molex(Chengdu)">
-//     Copyright © Molex(Chengdu) 2025
-// </copyright>
-// ***********************************************************************
-// Author           : MOLEX\kzheng
+// Author           : kama zheng
 // Created          : 04/01/2025
 // ***********************************************************************
 

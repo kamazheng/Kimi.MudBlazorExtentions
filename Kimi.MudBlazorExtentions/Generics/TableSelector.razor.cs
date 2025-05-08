@@ -21,9 +21,29 @@ public partial class TableSelector
     [Parameter]
     public string OrderByLabel { get; set; } = "Order By";
 
-
     [Parameter]
     public string FilterLabel { get; set; } = "Filter";
+
+    [Parameter]
+    public int? ZIndex { get; set; } = 1000;
+
+    [Parameter]
+    public string? AndLabel { get; set; } = "AND";
+
+    [Parameter]
+    public string? OrLabel { get; set; } = "OR";
+
+    [Parameter]
+    public string? FieldLabel { get; set; } = "Field";
+    [Parameter]
+    public string? OperatorLabel { get; set; } = "Operator";
+    [Parameter]
+    public string? ValueLabel { get; set; } = "Value";
+    [Parameter]
+    public string? AscendLabel { get; set; } = "Ascend";
+
+    [Parameter]
+    public string? DescendLabel { get; set; } = "Descend";
 
 
     protected override async Task OnInitializedAsync()

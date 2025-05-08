@@ -1,9 +1,6 @@
 ﻿// ***********************************************************************
-// <copyright file="ErrorCatchLoadingFab.cs" company="Molex(Chengdu)">
-//     Copyright © Molex(Chengdu) 2025
-// </copyright>
 // ***********************************************************************
-// Author           : MOLEX\kzheng
+// Author           : kama zheng
 // Created          : 04/24/2025
 // ***********************************************************************
 

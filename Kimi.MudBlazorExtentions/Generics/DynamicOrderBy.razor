@@ -24,7 +24,7 @@
             <MudCardContent>
                 <MudGrid Spacing="2">
                     <MudItem xs="12">
-                        <MudSelect Label="Field" T="PropertyInfo" AnchorOrigin="Origin.BottomCenter" Style="z-index:3000 !important"
+                        <MudSelect Label="@FieldLabel" T="PropertyInfo" AnchorOrigin="Origin.BottomCenter" Style="z-index:3000 !important"
                                    @bind-Value="@SelectedProperty" Text="@SelectedProperty.GetDisplayLabel()"
                                    Variant="Variant.Text" Typo="Typo.caption" Margin="Margin.Dense">
                             @foreach (var item in Properties)
