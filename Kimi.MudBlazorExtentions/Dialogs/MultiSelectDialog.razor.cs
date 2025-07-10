@@ -11,7 +11,7 @@ namespace Kimi.MudBlazorExtentions.Dialogs
     {
         [CascadingParameter]
         [NotNull]
-        private MudDialogInstance MudDialog { get; set; } = null!;
+        private IMudDialogInstance MudDialog { get; set; } = null!;
 
         [Parameter, EditorRequired]
         public string CancelButtonText { get; set; } = string.Empty;

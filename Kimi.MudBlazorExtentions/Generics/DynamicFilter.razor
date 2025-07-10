@@ -10,7 +10,7 @@
 
     @if (Properties?.Any() == true)
     {
-        <MudPopover RelativeWidth="true" Open="@_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways"
+        <MudPopover RelativeWidth="DropdownWidth.Adaptive" Open="@_isOpen" OverflowBehavior="OverflowBehavior.FlipAlways"
                     AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Paper="true">
             <MudCard Elevation="25" Class="px-3">
                 <MudCardHeader>

@@ -125,7 +125,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         AddNewTab(args.componentType, args.parameters, args.title, args.onClose);
     }
 
-    async Task CloseTabCallback(MudTabPanel panel) => await CloseTab((int)panel.ID);
+    async Task CloseTabCallback(MudTabPanel panel) => await CloseTab((int)panel.ID!);
 
     private async Task OnBeforeInternalNavigation(LocationChangingContext locationChangingContext)
     {

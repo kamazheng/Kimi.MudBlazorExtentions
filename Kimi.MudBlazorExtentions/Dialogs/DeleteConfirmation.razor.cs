@@ -43,7 +43,7 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         /// Gets or sets the MudDialog
         /// </summary>
         [CascadingParameter]
-        private MudDialogInstance MudDialog { get; set; } = default!;
+        private IMudDialogInstance MudDialog { get; set; } = default!;
 
         #endregion
 
