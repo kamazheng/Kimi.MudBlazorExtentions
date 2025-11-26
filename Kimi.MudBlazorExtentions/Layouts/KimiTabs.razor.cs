@@ -31,7 +31,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     {
         if (_kimiJsInterop is not null)
         {
-            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 10);
+            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 10, 600);
             await _kimiJsInterop.SetPageTitle(typeof(THomePage).Name);
         }
         if (_stateHasChanged)
@@ -127,7 +127,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
 
     async Task CloseTabCallback(MudTabPanel panel) => await CloseTab((int)panel.ID!);
 
-    private async Task OnBeforeInternalNavigation(LocationChangingContext locationChangingContext)
+    protected virtual async Task OnBeforeInternalNavigation(LocationChangingContext locationChangingContext)
     {
         if (JsRuntime is null) return;
         var confirmMsg = "Are you sure you want to navigate away from this page? Your unsaving data will lost";

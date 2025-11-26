@@ -77,7 +77,11 @@ public partial class BaseCrudLayout<T>
     [Parameter]
     public bool VirticalFab { get; set; } = true;
 
-    private readonly string baseCrudFormId = TagIdGenerator.Create();
+    [Parameter]
+    public int MinHeight { get; set; } = 600;
+
+    private readonly string baseCrudFormCardId = TagIdGenerator.Create();
+    private readonly string baseCrudFormDivId = TagIdGenerator.Create();
     public MudForm? EditForm { get; set; }
 
     protected override void OnInitialized()
@@ -87,6 +91,7 @@ public partial class BaseCrudLayout<T>
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await JsInterop.SetNotScrollMaxHeight(baseCrudFormId, 35);
+        await JsInterop.SetNotScrollMaxHeight(baseCrudFormDivId, 35, MinHeight);
+        await JsInterop.SetNotScrollMaxHeight(baseCrudFormCardId, 35, MinHeight);
     }
 }

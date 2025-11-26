@@ -1,3 +1,4 @@
+using Kimi.MudBlazorExtentions.Extensions;
 using Microsoft.AspNetCore.Components;
 using System.Reflection;
 
@@ -18,7 +19,9 @@ namespace Kimi.MudBlazorExtentions.Generics
 
         private PropertyInfo[]? subPropertyInfos = Array.Empty<PropertyInfo>();
         private Type? underlyingType;
+        bool isNullable = false;
         private object? classPropertyValue;
+        private string displayLabel => PropertyInfo.GetDisplayLabel();
 
         protected override void OnInitialized()
         {
@@ -34,6 +37,7 @@ namespace Kimi.MudBlazorExtentions.Generics
             }
 
             underlyingType = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) ?? PropertyInfo.PropertyType;
+            isNullable = Nullable.GetUnderlyingType(PropertyInfo.PropertyType) != null;
             subPropertyInfos = underlyingType.IsClass && underlyingType != typeof(string) ? underlyingType.GetProperties() : null;
             if (subPropertyInfos != null && subPropertyInfos.Length > 0)
             {
@@ -44,6 +48,10 @@ namespace Kimi.MudBlazorExtentions.Generics
                     PropertyInfo.SetValue(ClassInstance, classPropertyValue);
                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                 }
+            }
+            else
+            {
+                Value = PropertyInfo.GetValue(ClassInstance);
             }
         }
     }

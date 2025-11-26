@@ -5,6 +5,7 @@
 
 @{
     var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+    bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
     System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
 }
 
@@ -80,12 +81,22 @@ else
                 </MudItem>
             </MudGrid>
             break;
+
         case TypeCode.Boolean:
-            <MudCheckBox T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
-                         Disabled="Disabled"
-                         ReadOnly="ReadOnly"
-                         @attributes="AdditionalAttributes"></MudCheckBox>
+            <MudSelect T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
+                        Disabled="Disabled"
+                        ReadOnly="ReadOnly"
+                        Label="@Label"
+                        @attributes="AdditionalAttributes">
+                <MudSelectItem T="bool?" Value="true">@LocalizedText.GetBoolLocalizedText(true)</MudSelectItem>
+                <MudSelectItem T="bool?" Value="false">@LocalizedText.GetBoolLocalizedText(false)</MudSelectItem>
+                @if (isNullable)
+                {
+                    <MudSelectItem T="bool?" Value="null">@LocalizedText.GetBoolLocalizedText(null)</MudSelectItem>
+                }
+            </MudSelect>
             break;
+
         case TypeCode.Single:
         case TypeCode.Double:
         case TypeCode.Decimal:
@@ -105,6 +116,7 @@ else
                              Immediate="Immediate"
                              @attributes="AdditionalAttributes"></MudNumericField>
             break;
+
         default:
             <MudTextField T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
                           Label="@Label"

@@ -36,7 +36,7 @@ export function getHeightByClass(className) {
     }
 }
 
-export function setNotScrollMaxHeight(id, desiredMargin) {
+export function setNotScrollMaxHeight(id, desiredMargin, minHeight) {
     const element = document.getElementById(id);
     if (element) {
         const viewportHeight = window.innerHeight;
@@ -44,6 +44,9 @@ export function setNotScrollMaxHeight(id, desiredMargin) {
         if (absoluteTop !== null) {
             const height = viewportHeight - absoluteTop - desiredMargin;
             element.style.height = height + 'px';
+            if (minHeight !== undefined) {
+                element.style.minHeight = minHeight + 'px';
+            }
         }
     }
 }
@@ -60,7 +63,7 @@ export function setMinHeightToMaxWindowsHeight(id, desiredMargin) {
     }
 }
 
-export function setNotScrollMaxHeightByClass(className, desiredMargin) {
+export function setNotScrollMaxHeightByClass(className, desiredMargin, minHeight) {
     const elements = document.getElementsByClassName(className);
     if (elements.length > 0) {
         const viewportHeight = window.innerHeight;
@@ -69,6 +72,9 @@ export function setNotScrollMaxHeightByClass(className, desiredMargin) {
             if (absoluteTop !== null) {
                 const height = viewportHeight - absoluteTop - desiredMargin;
                 element.style.height = height + 'px';
+            }
+            if (minHeight !== undefined) {
+                element.style.minHeight = minHeight + 'px';
             }
         }
     }

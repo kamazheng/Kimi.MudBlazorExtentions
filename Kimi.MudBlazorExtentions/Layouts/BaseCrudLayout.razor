@@ -4,8 +4,8 @@
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam T
 
-<MudGrid Spacing="1">
-    <MudItem xs="12">
+<MudGrid Spacing="1" class="mt-n4">
+    <MudItem xs="12" Class="py-">
         <MudCard Class="py-2">
             @if (ShowActionBar)
             {
@@ -14,15 +14,15 @@
                     {
                         if (UseFab)
                         {
-                            <ErrorCatchLoadingFab Label="@SubmitLable" StartIcon="@Icons.Material.Outlined.Check" Size="Size.Medium" Vertical="@VirticalFab"
-                                                  OnClick="@(()=>OnSubmit.InvokeAsync(this))"
-                                                  Color="Color.Primary" Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
+                            <ErrorCatchLoadingFab Label="@SubmitLable" StartIcon="@Icons.Material.Outlined.Check" Size="Size.Medium"
+                                Vertical="@VirticalFab" OnClick="@(()=>OnSubmit.InvokeAsync(this))" Color="Color.Primary"
+                                Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
                         }
                         else
                         {
                             <ErrorCatchLoadingButton Label="@SubmitLable" Icon="@Icons.Material.Filled.Check"
-                                                     OnClick="@(()=>OnSubmit.InvokeAsync(this))"
-                                                     Variant="Variant.Filled" Color="Color.Primary" Class="ml-2" Disabled="@(IsReadOnly)">
+                                OnClick="@(()=>OnSubmit.InvokeAsync(this))" Variant="Variant.Filled" Color="Color.Primary"
+                                Class="ml-2" Disabled="@(IsReadOnly)">
                             </ErrorCatchLoadingButton>
                         }
                     }
@@ -35,15 +35,15 @@
                     {
                         if (UseFab)
                         {
-                            <ErrorCatchLoadingFab Label="@DeleteLable" StartIcon="@Icons.Material.Outlined.Clear" Size="Size.Medium" Vertical="@VirticalFab"
-                                                  OnClick="@(()=>OnDelete.InvokeAsync(this))"
-                                                  Color="Color.Error" Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
+                            <ErrorCatchLoadingFab Label="@DeleteLable" StartIcon="@Icons.Material.Outlined.Clear" Size="Size.Medium"
+                                Vertical="@VirticalFab" OnClick="@(()=>OnDelete.InvokeAsync(this))" Color="Color.Error"
+                                Disabled="@(IsReadOnly)"></ErrorCatchLoadingFab>
                         }
                         else
                         {
                             <ErrorCatchLoadingButton Label="@DeleteLable" Icon="@Icons.Material.Filled.Clear"
-                                                     Variant="Variant.Filled" Color="Color.Error"
-                                                     OnClick="@(()=>OnDelete.InvokeAsync(this))" Disabled="@IsReadOnly">
+                                Variant="Variant.Filled" Color="Color.Error" OnClick="@(()=>OnDelete.InvokeAsync(this))"
+                                Disabled="@IsReadOnly">
                             </ErrorCatchLoadingButton>
                         }
 
@@ -54,9 +54,10 @@
     </MudItem>
 
     <MudItem xs="12">
-        <div id="@baseCrudFormId" style="padding-top:10px;overflow-y:auto;">
-            <MudCard Style="height:100%">
-                <MudForm Model="@Model" style="width:100%;" @ref="EditForm" Validation="@Validation" ValidationDelay="0">
+        <div style="padding-top:10px;" id="@baseCrudFormDivId">
+            <MudCard Style="height:100%;overflow-y:auto;">
+                <MudForm Model="@Model" style="width:100%;" @ref="EditForm" Validation="@Validation"
+                    ValidationDelay="0">
                     @if (ShowValidationSummary)
                     {
                         <ValidationSummary />

@@ -15,7 +15,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
     {
         #region Methods
 
-        internal static T? ChangeType<T>(object value)
+        internal static T? ChangeType<T>(object? value)
         {
             var t = typeof(T);
 
@@ -29,7 +29,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
                 t = Nullable.GetUnderlyingType(t);
             }
 
-            return (T)Convert.ChangeType(value, t!);
+            return (T?)Convert.ChangeType(value, t!);
         }
         internal static object? ChangeType(object value, Type conversion)
         {

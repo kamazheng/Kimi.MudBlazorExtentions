@@ -4,9 +4,9 @@
 
 @if (ClassInstance != null)
 {
-    if (subPropertyInfos != null && subPropertyInfos.Length > 0)
+    if (subPropertyInfos?.Any() == true)
     {
-        <MudText Typo="Typo.subtitle1" Class="mt-5">@underlyingType!.GetDisplayLabel()</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mt-5">@displayLabel</MudText>
         foreach (var property in subPropertyInfos)
         {
             <DynamicInput ClassInstance="@classPropertyValue" PropertyInfo="@property"
@@ -27,7 +27,7 @@
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                                 }"
-                           Label="@PropertyInfo.GetDisplayLabel()"
+                           Label="@displayLabel"
                            Margin="@Margin"
                            HelperText="@HelperText"
                            Adornment="@Adornment"
@@ -45,7 +45,7 @@
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                                 }"
-                           Label="@PropertyInfo.GetDisplayLabel()"
+                           Label="@displayLabel"
                            Margin="@Margin"
                            HelperText="@HelperText"
                            Adornment="@Adornment"
@@ -60,8 +60,8 @@
             switch (typeCode)
             {
                 case TypeCode.DateTime:
-                    var dateLable = PropertyInfo.GetDisplayLabel() + " Day";
-                    var timeLable = PropertyInfo.GetDisplayLabel() + " Time";
+                    var dateLable = displayLabel + " Day";
+                    var timeLable = displayLabel + " Time";
                     <MudGrid>
                         <MudItem xs="12" sm="6">
                             <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
@@ -104,18 +104,23 @@
                     </MudGrid>
                     break;
                 case TypeCode.Boolean:
-                    <MudCheckBox T="bool?"
-                                 Label="@PropertyInfo.GetDisplayLabel()"
-                                 LabelPosition="LabelPosition.End"
-                                 Value="@((bool?)Value)"
-                                 ValueChanged="(e) => {
-                                        Value = (object)TypeExtensions.ChangeType<bool>(e ?? false);
-                                        ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
-                                        ClassInstanceChanged.InvokeAsync(ClassInstance);
-                                   }"
-                                 Disabled="Disabled"
-                                 ReadOnly="ReadOnly"
-                                 @attributes="AdditionalAttributes"></MudCheckBox>
+                    <MudSelect T="bool?" Label="@displayLabel"
+                            Value="@(bool.TryParse(Value?.ToString(), out var boolValue) ? (bool?)boolValue : null)"
+                            ValueChanged="(e) => {
+                                    Value = (object?)TypeExtensions.ChangeType<bool?>(e);
+                                    ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
+                                    ClassInstanceChanged.InvokeAsync(ClassInstance);
+                            }"
+                            Disabled="Disabled"
+                            ReadOnly="ReadOnly"
+                            @attributes="AdditionalAttributes">
+                        <MudSelectItem T="bool?" Value="true">@LocalizedText.GetBoolLocalizedText(true)</MudSelectItem>
+                        <MudSelectItem T="bool?" Value="false">@LocalizedText.GetBoolLocalizedText(false)</MudSelectItem>
+                        @if (isNullable)
+                        {
+                            <MudSelectItem T="bool?" Value="null">@LocalizedText.GetBoolLocalizedText(null)</MudSelectItem>
+                        }
+                    </MudSelect>
                     break;
                 case TypeCode.Single:
                 case TypeCode.Double:
@@ -124,13 +129,13 @@
                 case TypeCode.Int32:
                 case TypeCode.Int64:
                     <MudNumericField T="double"
-                                     Value="@(Value == null ? 0:(double)Value)"
+                                     Value="@(Value == null ? 0:double.Parse(Value.ToString()!))"
                                      ValueChanged="(e) => {
                                     Value = e;
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                                 }"
-                                     Label="@PropertyInfo.GetDisplayLabel()"
+                                     Label="@displayLabel"
                                      Margin="@Margin"
                                      HelperText="@HelperText"
                                      Adornment="@Adornment"
@@ -149,7 +154,7 @@
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                                 }"
-                                  Label="@PropertyInfo.GetDisplayLabel()"
+                                  Label="@displayLabel"
                                   Typo="@Typo"
                                   Margin="@Margin"
                                   HelperText="@HelperText"
