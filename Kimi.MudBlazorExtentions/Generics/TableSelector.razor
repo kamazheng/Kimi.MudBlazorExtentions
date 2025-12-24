@@ -1,22 +1,27 @@
 ﻿@inherits MudBaseInput<object>
 
-<MudStack StretchItems="StretchItems.All" Wrap="Wrap.Wrap" Spacing="4" Row Style="width:100%" AlignItems="AlignItems.Start">
+<MudStack StretchItems="StretchItems.All" Wrap="Wrap.Wrap" Spacing="4" Row Style="width:100%"
+    AlignItems="AlignItems.Start">
     <MudSelect T="string" Value="@this.TableSelectorModel.SelectedTableName" ValueChanged="SelectedTableChanged"
-               Style="min-width:150px" Label="Table"
-               Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled" ReadOnly="@this.ReadOnly">
+        Style="min-width:150px" Label="Table" Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled"
+        ReadOnly="@this.ReadOnly">
         @foreach (var item in TableSelectorModel.TableList)
         {
             <MudSelectItem Value="@item.TableName">@item.TableDisplayName</MudSelectItem>
         }
     </MudSelect>
-    <MudNumericField T="int" Value="@this.TableSelectorModel.PageIndex" ValueChanged="PageIndexChanged" Label="@PageIndexLabel" Style="min-width:100px;"
-                     Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
-    <MudNumericField T="int" Value="@this.TableSelectorModel.PageSize" ValueChanged="PageSizeChanged" Label="@PageSizeLabel" Style="min-width:100px;"
-                     Variant="@this.Variant" Margin="@this.Margin" Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
-    <DynamicOrderBy T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.OrderBy" Label="@OrderByLabel"
-                    ZIndex="@ZIndex" AscendLabel="@AscendLabel" DescendLabel="@DescendLabel"
-                    ValueChanged="OrderByChanged" Style="min-width:100px;"></DynamicOrderBy>
-    <DynamicFilter T="string" TableClassType="@TableSelectorModel.SelectedTableType" Value="@this.TableSelectorModel.Filter" Label="@FilterLabel"
-                   ZIndex="@ZIndex" AndLabel="@AndLabel" OrLabel="@OrLabel" FieldLabel="@FieldLabel" OperatorLabel="@OperatorLabel" ValueLabel="@ValueLabel"
-        ValueChanged="FilterChanged" Style="min-width:250px"></DynamicFilter>
+    <MudNumericField T="int" Value="@this.TableSelectorModel.PageIndex" ValueChanged="PageIndexChanged"
+        Label="@PageIndexLabel" Style="min-width:100px;" Variant="@this.Variant" Margin="@this.Margin"
+        Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
+    <MudNumericField T="int" Value="@this.TableSelectorModel.PageSize" ValueChanged="PageSizeChanged"
+        Label="@PageSizeLabel" Style="min-width:100px;" Variant="@this.Variant" Margin="@this.Margin"
+        Disabled="@this.Disabled" ReadOnly="@this.ReadOnly" />
+    <DynamicOrderBy T="string" TableClassType="@TableSelectorModel.SelectedTableType"
+        ExpressionFormat="ExpressionFormat.DynamicLinq" Value="@this.TableSelectorModel.OrderBy" Label="@OrderByLabel"
+        ZIndex="@ZIndex" AscendLabel="@AscendLabel" DescendLabel="@DescendLabel" ValueChanged="OrderByChanged"
+        Style="min-width:100px;"></DynamicOrderBy>
+    <DynamicFilter T="string" TableClassType="@TableSelectorModel.SelectedTableType"
+        ExpressionFormat="ExpressionFormat.DynamicLinq" Value="@this.TableSelectorModel.Filter" Label="@FilterLabel"
+        ZIndex="@ZIndex" AndLabel="@AndLabel" OrLabel="@OrLabel" FieldLabel="@FieldLabel" OperatorLabel="@OperatorLabel"
+        ValueLabel="@ValueLabel" ValueChanged="FilterChanged" Style="min-width:250px"></DynamicFilter>
 </MudStack>

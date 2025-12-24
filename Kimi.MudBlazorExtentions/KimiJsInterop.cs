@@ -38,7 +38,7 @@ public class KimiJsInterop : IAsyncDisposable
         await module.InvokeAsync<string>("saveAsFile", new object[] { fileName, basw64str });
     }
 
-    public async ValueTask SetNotScrollMaxHeight(string id, int desiredMargin, int minHeight = 600)
+    public async ValueTask SetNotScrollMaxHeight(string id, int desiredMargin, string minHeight = "600px")
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setNotScrollMaxHeight", new object[] { id, desiredMargin, minHeight });
@@ -50,7 +50,7 @@ public class KimiJsInterop : IAsyncDisposable
         await module.InvokeAsync<string>("setMinHeightToMaxWindowsHeight", new object[] { id, desiredMargin });
     }
 
-    public async ValueTask SetNotScrollMaxHeightByClass(string className, int desiredMargin, int minHeight = 600)
+    public async ValueTask SetNotScrollMaxHeightByClass(string className, int desiredMargin, string minHeight = "600px")
     {
         var module = await kimiTask.Value;
         await module.InvokeAsync<string>("setNotScrollMaxHeightByClass", new object[] { className, desiredMargin, minHeight });

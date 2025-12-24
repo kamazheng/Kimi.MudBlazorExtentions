@@ -117,7 +117,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
             }
             else
             {
-                return property.Name;
+                return property.Name.SplitAndCapitalize();
             }
         }
 
@@ -180,6 +180,27 @@ namespace Kimi.MudBlazorExtentions.Extensions
                 return GetPropertyInfo(unaryExpression.Operand);
 
             throw new ArgumentException("Invalid expression");
+        }
+
+        /// <summary>
+        /// Get the property info 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyLambda"></param>
+        /// <returns></returns>
+        public static PropertyInfo GetPropertyInfo<T>(this Expression<Func<T>> propertyLambda)
+        {
+            if (propertyLambda.Body is MemberExpression member)
+            {
+                if (member.Member is PropertyInfo propInfo)
+                    return propInfo;
+            }
+            else if (propertyLambda.Body is UnaryExpression unary && unary.Operand is MemberExpression member2)
+            {
+                if (member2.Member is PropertyInfo propInfo)
+                    return propInfo;
+            }
+            return null!;
         }
 
         /// <summary>
@@ -286,6 +307,39 @@ namespace Kimi.MudBlazorExtentions.Extensions
                 {
                     self.SetPropertyValue(property.Name, property.GetValue(sourceObj));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Builds a sorting function for MudTable based on the specified property.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static Func<object, object> BuildMudTableHeaderSortBy(this PropertyInfo property)
+        {
+            var ptype = property.PropertyType;
+            var underlying = Nullable.GetUnderlyingType(ptype) ?? ptype;
+            var typeCode = Type.GetTypeCode(underlying);
+            switch (typeCode)
+            {
+                case TypeCode.String:
+                    return new Func<object, object>(x => (object)(property.GetValue(x)?.ToString() ?? string.Empty));
+                case TypeCode.DateTime:
+                    return new Func<object, object>(x => (object)Convert.ToDateTime(property.GetValue(x) ?? DateTime.MinValue));
+                case TypeCode.Decimal:
+                case TypeCode.Double:
+                case TypeCode.Single:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                case TypeCode.Byte:
+                case TypeCode.SByte:
+                    return new Func<object, object>(x => (object)Convert.ToDouble(property.GetValue(x) ?? 0));
+                default:
+                    return new Func<object, object>(x => (object)(property.GetValue(x)?.ToString() ?? string.Empty));
             }
         }
 

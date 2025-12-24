@@ -4,14 +4,22 @@
 <NavigationLock ConfirmExternalNavigation="@ConfirmExternalNavigation"
     OnBeforeInternalNavigation="@OnBeforeInternalNavigation"></NavigationLock>
 <div style="overflow-y: auto;">
-    <MudDynamicTabs @bind-ActivePanelIndex="@activeTabIndex" CloseTab="@CloseTabCallback" KeepPanelsAlive="true"
-        PanelClass="px-4 py-6" Elevation="4" Rounded ApplyEffectsToContainer>
-        <MudTabPanel Text="Home" ShowCloseIcon="false" Class="home_panel" Icon="@Icons.Material.Filled.Home">
-            @RenderHomePage()
-        </MudTabPanel>
-        @foreach (var tab in UserTabs)
-        {
-            <MudTabPanel ID="@tab.Id" Text="@tab.Title" ShowCloseIcon="@tab.ShowCloseIcon">@tab.Content</MudTabPanel>
-        }
+    <MudDynamicTabs @ref="@MudTabs" @bind-ActivePanelIndex="@activeTabIndex" CloseTab="@CloseTabCallback"
+        KeepPanelsAlive="true" PanelClass="px-4 py-6" Elevation="4" Rounded ApplyEffectsToContainer>
+        <Header>
+        </Header>
+        <ChildContent>
+            <MudTabPanel Text="Home" ShowCloseIcon="false" Class="home_panel" Icon="@Icons.Material.Filled.Home">
+                @RenderHomePage()
+            </MudTabPanel>
+            <CascadingValue Value="@CloseActiveTab" Name="@nameof(CloseActiveTab)">
+                @foreach (var tab in UserTabs)
+                {
+                    <MudTabPanel ID="@tab.Id" Text="@tab.Title" ShowCloseIcon="@tab.ShowCloseIcon">@tab.Content
+                    </MudTabPanel>
+                }
+            </CascadingValue>
+        </ChildContent>
+
     </MudDynamicTabs>
 </div>

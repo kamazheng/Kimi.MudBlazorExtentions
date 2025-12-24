@@ -53,6 +53,12 @@ public partial class DynamicFilter<T>
         { "EndsWith", "Ends With" }
     };
 
+    /// <summary>
+    /// Expression format type. Default is MSSQL.
+    /// </summary>
+    [Parameter]
+    public ExpressionFormat ExpressionFormat { get; set; } = ExpressionFormat.MSSQL;
+
     private PropertyInfo[]? Properties;
     private PropertyInfo SelectedProperty = null!;
     private Type? previousTableClassType;
@@ -124,13 +130,14 @@ public partial class DynamicFilter<T>
 
     private void FilterAndConfirm(MouseEventArgs e)
     {
+        var logicalOperator = ExpressionFormat == ExpressionFormat.DynamicLinq ? " && " : " AND ";
         if (string.IsNullOrEmpty(Value))
         {
             Value = GetExpression();
         }
         else
         {
-            Value += $" AND {GetExpression()}";
+            Value += $"{logicalOperator}{GetExpression()}";
         }
         ValueChanged.InvokeAsync(Value);
         _isOpen = false;
@@ -138,13 +145,14 @@ public partial class DynamicFilter<T>
 
     private void FilterOrConfirm(MouseEventArgs e)
     {
+        var logicalOperator = ExpressionFormat == ExpressionFormat.DynamicLinq ? " || " : " OR ";
         if (string.IsNullOrEmpty(Value))
         {
             Value = GetExpression();
         }
         else
         {
-            Value += $" OR {GetExpression()}";
+            Value += $"{logicalOperator}{GetExpression()}";
         }
         ValueChanged.InvokeAsync(Value);
         _isOpen = false;
@@ -155,10 +163,22 @@ public partial class DynamicFilter<T>
         if (string.IsNullOrEmpty(SelectedOperator) || SelectedProperty == null)
             return "";
 
-        var name = $"[{SelectedProperty.Name}]";
+        var name = ExpressionFormat == ExpressionFormat.MSSQL ? $"[{SelectedProperty.Name}]" : SelectedProperty.Name;
         var underlyingType = Nullable.GetUnderlyingType(SelectedProperty.PropertyType) ?? SelectedProperty.PropertyType;
         System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
 
+        if (ExpressionFormat == ExpressionFormat.DynamicLinq)
+        {
+            return GetDynamicLinqExpression(name, underlyingType, typeCode);
+        }
+        else
+        {
+            return GetMSSQLExpression(name, underlyingType, typeCode);
+        }
+    }
+
+    private string GetMSSQLExpression(string name, Type underlyingType, System.TypeCode typeCode)
+    {
         if (typeCode == TypeCode.String)
         {
             switch (SelectedOperator)
@@ -205,6 +225,59 @@ public partial class DynamicFilter<T>
                 if (string.IsNullOrEmpty(InputValue))
                     throw new InvalidOperationException($"Input value cannot be empty for '{SelectedOperator}' operator.");
                 string formattedValue = FormatFilterValue(InputValue, underlyingType);
+                return $"{name} {SelectedOperator} {formattedValue}";
+            }
+        }
+    }
+
+    private string GetDynamicLinqExpression(string name, Type underlyingType, System.TypeCode typeCode)
+    {
+        if (typeCode == TypeCode.String)
+        {
+            switch (SelectedOperator)
+            {
+                case "Contains":
+                case "StartsWith":
+                case "EndsWith":
+                    if (string.IsNullOrEmpty(InputValue))
+                        throw new InvalidOperationException($"Input value cannot be empty for '{SelectedOperator}' operator.");
+                    return $"{name}.{SelectedOperator}(\"{EscapeLinqStringValue(InputValue)}\")";
+                case "=":
+                case "<>":
+                    if (string.IsNullOrEmpty(InputValue))
+                    {
+                        return SelectedOperator == "="
+                            ? $"({name} == null || {name} == \"\")"
+                            : $"({name} != null && {name} != \"\")";
+                    }
+                    else
+                    {
+                        string formattedValue = FormatDynamicLinqValue(InputValue, underlyingType);
+                        return $"{name} {(SelectedOperator == "=" ? "==" : "!=")} {formattedValue}";
+                    }
+                default:
+                    throw new InvalidOperationException($"Unsupported operator: {SelectedOperator}");
+            }
+        }
+        else
+        {
+            if (SelectedOperator == "=" || SelectedOperator == "<>")
+            {
+                if (string.IsNullOrEmpty(InputValue))
+                {
+                    return $"{name} {(SelectedOperator == "=" ? "==" : "!=")} null";
+                }
+                else
+                {
+                    string formattedValue = FormatDynamicLinqValue(InputValue, underlyingType);
+                    return $"{name} {(SelectedOperator == "=" ? "==" : "!=")} {formattedValue}";
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(InputValue))
+                    throw new InvalidOperationException($"Input value cannot be empty for '{SelectedOperator}' operator.");
+                string formattedValue = FormatDynamicLinqValue(InputValue, underlyingType);
                 return $"{name} {SelectedOperator} {formattedValue}";
             }
         }
@@ -258,6 +331,35 @@ public partial class DynamicFilter<T>
             .Replace("_", "\\_")
             .Replace("[", "\\[")
             .Replace("]", "\\]");
+    }
+
+    private static string FormatDynamicLinqValue(string? inputValue, Type type)
+    {
+        if (string.IsNullOrEmpty(inputValue))
+            return "null";
+
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (underlyingType == typeof(string))
+            return $"\"{EscapeLinqStringValue(inputValue)}\"";
+        else if (underlyingType == typeof(bool))
+        {
+            if (inputValue.ToLower() == "true")
+                return "true";
+            else if (inputValue.ToLower() == "false")
+                return "false";
+            else
+                throw new InvalidOperationException("Invalid boolean value.");
+        }
+        else if (underlyingType == typeof(DateTime) || underlyingType == typeof(DateOnly) || underlyingType == typeof(TimeOnly))
+            return $"DateTime.Parse(\"{inputValue}\")";
+        else
+            return inputValue;
+    }
+
+    private static string EscapeLinqStringValue(string value)
+    {
+        return value.Replace("\"", "\\\"");
     }
 
     private bool RequiresInputValue()

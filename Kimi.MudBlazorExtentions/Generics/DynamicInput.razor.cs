@@ -1,13 +1,12 @@
 using Kimi.MudBlazorExtentions.Extensions;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 using System.Reflection;
 
 namespace Kimi.MudBlazorExtentions.Generics
 {
     public partial class DynamicInput
     {
-        [Parameter]
-        public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
         [Parameter, EditorRequired]
         public object ClassInstance { get; set; } = null!;
@@ -17,11 +16,17 @@ namespace Kimi.MudBlazorExtentions.Generics
         [Parameter, EditorRequired]
         public PropertyInfo PropertyInfo { get; set; } = null!;
 
+        [Parameter]
+        public bool? OverrideHelperTextOnFocus { get; set; }
+
         private PropertyInfo[]? subPropertyInfos = Array.Empty<PropertyInfo>();
-        private Type? underlyingType;
+        private Type underlyingType = null!;
         bool isNullable = false;
         private object? classPropertyValue;
         private string displayLabel => PropertyInfo.GetDisplayLabel();
+        private string? title => PropertyInfo.GetXmlSummary();
+        private System.TypeCode typeCode => Type.GetTypeCode(underlyingType);
+
 
         protected override void OnInitialized()
         {
@@ -53,6 +58,9 @@ namespace Kimi.MudBlazorExtentions.Generics
             {
                 Value = PropertyInfo.GetValue(ClassInstance);
             }
+            this.HelperText ??= title;
+            this.Label ??= displayLabel;
+            HelperTextOnFocus = OverrideHelperTextOnFocus ?? true;
         }
     }
 }

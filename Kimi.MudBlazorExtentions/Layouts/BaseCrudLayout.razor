@@ -1,15 +1,16 @@
 ﻿@using Kimi.MudBlazorExtentions.Buttons
 @using Kimi.MudBlazorExtentions.Extensions
+@using Kimi.MudBlazorExtentions.Components
 @using MudBlazor
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam T
 
-<MudGrid Spacing="1" class="mt-n4">
-    <MudItem xs="12" Class="py-">
-        <MudCard Class="py-2">
+<MudGrid Spacing="0" Class="pa-0 ma-0" Style="height:100%;">
+    <MudItem xs="12">
+        <MudCard Class="ma-0 pa-0">
             @if (ShowActionBar)
             {
-                <MudToolBar Style="display:flex;" Class="pt-2">
+                <MudToolBar Style="display:flex; min-height:85px;" Class="py-3">
                     @if (AllowEdit)
                     {
                         if (UseFab)
@@ -48,15 +49,39 @@
                         }
 
                     }
+                    @if (ShowXmlOfType)
+                    {
+                        if (UseFab)
+                        {
+                            <div class="pl-5">
+                                <MudTooltip Text="@TypeXml" Class="pl-5" Arrow="true" Placement="Placement.Bottom">
+                                    <ErrorCatchLoadingFab Label="@HelperLable" StartIcon="@Icons.Material.Outlined.Help"
+                                        Size="Size.Medium" Vertical="@VirticalFab" Color="Color.Default" Disabled="@(IsReadOnly)">
+                                    </ErrorCatchLoadingFab>
+                                </MudTooltip>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="pl-5">
+                                <MudTooltip Text="@TypeXml" Class="pl-5" Arrow="true" Placement="Placement.Bottom">
+                                    <ErrorCatchLoadingButton Label="@DeleteLable" Icon="@Icons.Material.Filled.Help"
+                                        Variant="Variant.Filled" Color="Color.Default" Disabled="@IsReadOnly">
+                                    </ErrorCatchLoadingButton>
+                                </MudTooltip>
+                            </div>
+                        }
+                    }
                 </MudToolBar>
             }
         </MudCard>
     </MudItem>
 
     <MudItem xs="12">
-        <div style="padding-top:10px;" id="@baseCrudFormDivId">
-            <MudCard Style="height:100%;overflow-y:auto;">
-                <MudForm Model="@Model" style="width:100%;" @ref="EditForm" Validation="@Validation"
+        <ToggleFullScreen>
+        <div id="@baseCrudFormDivId" style="width:100%; min-height:100%;">
+            <MudCard Style="min-height:100%; overflow-y:auto;" Class="pa-0 ma-0">
+                <MudForm Model="@Model" style="width:100%; min-height:100%;" @ref="EditForm" Validation="@Validation" Class="pa-0 ma-0"
                     ValidationDelay="0">
                     @if (ShowValidationSummary)
                     {
@@ -73,5 +98,6 @@
                 }
             </MudCard>
         </div>
+        </ToggleFullScreen>
     </MudItem>
 </MudGrid>

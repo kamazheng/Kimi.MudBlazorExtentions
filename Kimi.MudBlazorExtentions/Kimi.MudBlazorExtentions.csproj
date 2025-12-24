@@ -13,7 +13,8 @@
         <Authors>Kama Zheng</Authors>
         <Description>Extensions of Mudblazor</Description>
         <PackageProjectUrl>https://github.com/kamazheng/Kimi.MudBlazorExtentions</PackageProjectUrl>
-        <PackageTags>Blazor, MudBlazor, Material, Material Design, Components, Blazor Components, Blazor Library</PackageTags>
+        <PackageTags>Blazor, MudBlazor, Material, Material Design, Components, Blazor Components,
+            Blazor Library</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>

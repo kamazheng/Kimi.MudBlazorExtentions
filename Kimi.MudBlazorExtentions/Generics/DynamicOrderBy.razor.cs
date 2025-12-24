@@ -28,6 +28,12 @@ public partial class DynamicOrderBy<T> : MudTextField<string>
     [Parameter]
     public string? DescendLabel { get; set; }
 
+    /// <summary>
+    /// Expression format type. Default is MSSQL.
+    /// </summary>
+    [Parameter]
+    public ExpressionFormat ExpressionFormat { get; set; } = ExpressionFormat.MSSQL;
+
     private PropertyInfo[]? Properties;
     private PropertyInfo SelectedProperty = null!;
     private Type? previousTableClassType;
@@ -76,14 +82,35 @@ public partial class DynamicOrderBy<T> : MudTextField<string>
 
     private void OnAscend(MouseEventArgs e)
     {
-        if (string.IsNullOrEmpty(Value)) { Value = $"[{SelectedProperty.Name}]"; } else { Value += $",[{SelectedProperty.Name}]"; }
+        var propertyName = ExpressionFormat == ExpressionFormat.MSSQL ? $"[{SelectedProperty.Name}]" : SelectedProperty.Name;
+        var separator = string.IsNullOrEmpty(Value) ? "" : ExpressionFormat == ExpressionFormat.MSSQL ? "," : ",";
+        
+        if (string.IsNullOrEmpty(Value)) 
+        { 
+            Value = propertyName; 
+        } 
+        else 
+        { 
+            Value += $"{separator}{propertyName}"; 
+        }
         ValueChanged.InvokeAsync(Value);
         _isOpen = false;
     }
 
     private void OnDescend(MouseEventArgs e)
     {
-        if (string.IsNullOrEmpty(Value)) { Value = $"[{SelectedProperty.Name}] DESC"; } else { Value += $",[{SelectedProperty.Name}] DESC"; }
+        var propertyName = ExpressionFormat == ExpressionFormat.MSSQL ? $"[{SelectedProperty.Name}]" : SelectedProperty.Name;
+        var sortOrder = ExpressionFormat == ExpressionFormat.MSSQL ? " DESC" : " descending";
+        var separator = string.IsNullOrEmpty(Value) ? "" : ExpressionFormat == ExpressionFormat.MSSQL ? "," : ",";
+        
+        if (string.IsNullOrEmpty(Value)) 
+        { 
+            Value = $"{propertyName}{sortOrder}"; 
+        } 
+        else 
+        { 
+            Value += $"{separator}{propertyName}{sortOrder}"; 
+        }
         ValueChanged.InvokeAsync(Value);
         _isOpen = false;
     }

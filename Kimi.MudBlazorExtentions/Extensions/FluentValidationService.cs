@@ -3,7 +3,6 @@
 // Created          : 04/01/2025
 // ***********************************************************************
 
-namespace Kimi.MudBlazorExtentions.Extensions;
 
 using FluentValidation;
 using FluentValidation.Internal;
@@ -17,6 +16,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+
+namespace Kimi.MudBlazorExtentions.Extensions;
 
 public static class FluentValidationService
 {

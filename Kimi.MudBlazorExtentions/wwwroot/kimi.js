@@ -45,7 +45,7 @@ export function setNotScrollMaxHeight(id, desiredMargin, minHeight) {
             const height = viewportHeight - absoluteTop - desiredMargin;
             element.style.height = height + 'px';
             if (minHeight !== undefined) {
-                element.style.minHeight = minHeight + 'px';
+                element.style.minHeight = minHeight;
             }
         }
     }
@@ -74,7 +74,7 @@ export function setNotScrollMaxHeightByClass(className, desiredMargin, minHeight
                 element.style.height = height + 'px';
             }
             if (minHeight !== undefined) {
-                element.style.minHeight = minHeight + 'px';
+                element.style.minHeight = minHeight;
             }
         }
     }

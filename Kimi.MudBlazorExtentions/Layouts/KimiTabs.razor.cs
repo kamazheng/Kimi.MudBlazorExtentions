@@ -26,12 +26,13 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     private int activeTabIndex;
     private readonly List<TabItem> UserTabs = [];
 
+    public MudDynamicTabs MudTabs = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_kimiJsInterop is not null)
         {
-            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 10, 600);
+            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 0, "max(100%, 600px)");
             await _kimiJsInterop.SetPageTitle(typeof(THomePage).Name);
         }
         if (_stateHasChanged)
@@ -83,6 +84,25 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
             hash = HashCode.Combine(hash, parameter.Key.GetHashCode(), parameter.Value.GetHashCode());
         }
         return hash;
+    }
+
+    public async Task CloseActiveTab()
+    {
+        var tab = UserTabs[MudTabs.ActivePanelIndex - 1];
+        if (tab.OnClose is not null)
+        {
+            var cfClose = await tab.OnClose.Invoke();
+            if (cfClose)
+            {
+                RemoveTab(tab);
+            }
+        }
+        else
+        {
+            RemoveTab(tab);
+        }
+        MudTabs.ActivatePanel(0, true);
+        await Task.CompletedTask;
     }
 
     public async Task CloseTab(int tabId)

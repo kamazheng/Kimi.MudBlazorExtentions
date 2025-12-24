@@ -35,10 +35,19 @@ public partial class BaseCrudLayout<T>
     public String DeleteLable { get; set; } = "Delete";
 
     [Parameter]
+    public String HelperLable { get; set; } = "Help";
+
+    [Parameter]
     public bool ShowValidationSummary { get; set; }
+
+    [Parameter]
+    public bool ShowXmlOfType { get; set; } = true;
 
     [Parameter, EditorRequired]
     public T Model { get; set; } = default!;
+
+    [Parameter]
+    public Type? ModelType { get; set; }
 
     [Parameter]
     public EventCallback<BaseCrudLayout<T>> OnDelete { get; set; }
@@ -78,11 +87,12 @@ public partial class BaseCrudLayout<T>
     public bool VirticalFab { get; set; } = true;
 
     [Parameter]
-    public int MinHeight { get; set; } = 600;
+    public string MinHeight { get; set; } = "max(100%, 600px)";
 
     private readonly string baseCrudFormCardId = TagIdGenerator.Create();
     private readonly string baseCrudFormDivId = TagIdGenerator.Create();
     public MudForm? EditForm { get; set; }
+    public string? TypeXml => XmlDocExtensions.GetXmlSummary(ModelType ?? typeof(T));
 
     protected override void OnInitialized()
     {

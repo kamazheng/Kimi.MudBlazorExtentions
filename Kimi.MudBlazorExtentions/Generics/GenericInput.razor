@@ -4,95 +4,90 @@
 @inherits MudBaseInput<T>
 
 @{
-    var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-    bool isNullable = Nullable.GetUnderlyingType(typeof(T)) != null;
-    System.TypeCode typeCode = Type.GetTypeCode(underlyingType);
+    var commonFieldAttributes = new Dictionary<string, object?>
+    {
+        { nameof(Label), Label },
+        { nameof(HelperText), HelperText },
+        { nameof(Disabled), Disabled },
+        { nameof(ReadOnly), ReadOnly },
+        { nameof(Required), Required },
+        { nameof(Variant), Variant },
+        { nameof(Margin), Margin },
+        { nameof(Adornment), Adornment },
+        { nameof(AdornmentIcon), AdornmentIcon },
+        { nameof(FullWidth), FullWidth },
+        { nameof(For), For },
+        { nameof(Validation), Validation },
+        { nameof(HelperTextOnFocus), HelperTextOnFocus }
+    };
+
+    // 安全处理 AdditionalAttributes 可能为 null 的情况
+    var safeAdditionalAttributes = UserAttributes ?? new Dictionary<string, object?>();
+    
+    var mergedAttributes = safeAdditionalAttributes
+        .Concat(commonFieldAttributes.Where(kvp => !safeAdditionalAttributes.ContainsKey(kvp.Key)))
+        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 }
 
 @if (underlyingType == typeof(DateOnly))
 {
-    <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
-                   DateChanged="(e) => {Value = TypeExtensions.ChangeType<T>(DateOnly.FromDateTime((DateTime)e!));ValueChanged.InvokeAsync(Value);}"
-                   Label="@Label"
-                   Margin="@Margin"
-                   HelperText="@HelperText"
-                   Adornment="@Adornment"
-                   AdornmentIcon="@AdornmentIcon"
-                   Variant="Variant"
-                   Disabled="Disabled"
-                   ReadOnly="ReadOnly"
-                   @attributes="AdditionalAttributes" />
+    <MudTextField T="T"
+        Value="GetSafeDTValue()"
+        ValueChanged="OnValueChanged"
+        InputType="InputType.Date"
+        Converter="@GetTextConverterForT()"
+        @attributes="mergedAttributes" />
 }
 else if (underlyingType == typeof(TimeOnly))
 {
-    <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
-                   TimeChanged="(e) => {Value = TypeExtensions.ChangeType<T>(TimeOnly.FromTimeSpan((TimeSpan)e!));ValueChanged.InvokeAsync(Value);}"
-                   Label="@Label"
-                   Margin="@Margin"
-                   HelperText="@HelperText"
-                   Adornment="@Adornment"
-                   AdornmentIcon="@AdornmentIcon"
-                   Variant="Variant"
-                   Disabled="Disabled"
-                   ReadOnly="ReadOnly"
-                   @attributes="AdditionalAttributes" />
+    <MudTextField T="T"
+        Value="GetSafeDTValue()"
+        ValueChanged="OnValueChanged"
+        InputType="InputType.Time"
+        Converter="@GetTextConverterForT()"
+        @attributes="mergedAttributes" />
+}
+else if (underlyingType.IsEnum)
+{
+    <MudSelect T="T"
+        Value="@Value"
+        ValueChanged="OnValueChanged"
+        @attributes="mergedAttributes">
+        @foreach (T enumValue in Enum.GetValues(underlyingType))
+        {
+            var name = Enum.GetName(underlyingType, enumValue);
+            var tip = XmlDocExtensions.GetXmlEnumFieldSummary(underlyingType, name!);
+            <MudSelectItem T="T" Value="@enumValue">
+                <MudTooltip Text="@tip" ShowOnHover="@( !string.IsNullOrWhiteSpace(tip) )">
+                    <MudText>@name</MudText>
+                </MudTooltip>
+            </MudSelectItem>
+        }
+    </MudSelect>
 }
 else
 {
     switch (typeCode)
     {
         case TypeCode.DateTime:
-            <MudGrid>
-                <MudItem xs="12" sm="6">
-                    <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
-                                   DateChanged="(e) => {
-                                        var date = e ?? DateTime.Now;
-                                        var time = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay;
-                                        Value = TypeExtensions.ChangeType<T>(date.Date + time);
-                                        ValueChanged.InvokeAsync(Value);
-                                   }"
-                                   Label="@Label"
-                                   Margin="@Margin"
-                                   HelperText="@HelperText"
-                                   Adornment="@Adornment"
-                                   AdornmentIcon="@AdornmentIcon"
-                                   Variant="Variant"
-                                   Disabled="Disabled"
-                                   ReadOnly="ReadOnly"
-                                   @attributes="AdditionalAttributes" />
-                </MudItem>
-                <MudItem xs="12" sm="6">
-                    <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
-                                   TimeChanged="(e) => {
-                                        var time = e ?? TimeSpan.Zero;
-                                        var date = DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).Date;
-                                        Value = TypeExtensions.ChangeType<T>(date + time);
-                                        ValueChanged.InvokeAsync(Value);
-                                   }"
-                                   Label="@Label"
-                                   Margin="@Margin"
-                                   HelperText="@HelperText"
-                                   Adornment="@Adornment"
-                                   AdornmentIcon="@AdornmentIcon"
-                                   Variant="Variant"
-                                   Disabled="Disabled"
-                                   ReadOnly="ReadOnly"
-                                   @attributes="AdditionalAttributes" />
-                </MudItem>
-            </MudGrid>
+            <MudTextField T="T"
+                Value="GetSafeDTValue()"
+                ValueChanged="OnValueChanged"
+                Format="s"
+                InputType="InputType.DateTimeLocal"
+                @attributes="mergedAttributes" />
             break;
 
         case TypeCode.Boolean:
-            <MudSelect T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
-                        Disabled="Disabled"
-                        ReadOnly="ReadOnly"
-                        Label="@Label"
-                        @attributes="AdditionalAttributes">
-                <MudSelectItem T="bool?" Value="true">@LocalizedText.GetBoolLocalizedText(true)</MudSelectItem>
-                <MudSelectItem T="bool?" Value="false">@LocalizedText.GetBoolLocalizedText(false)</MudSelectItem>
+            <MudSelect T="T"
+                Value="@Value"
+                ValueChanged="OnValueChanged"
+                @attributes="mergedAttributes">
+                <MudSelectItem T="T" Value="TypeExtensions.ChangeType<T>(true)">@LocalizedText.GetBoolLocalizedText(true)</MudSelectItem>
+                <MudSelectItem T="T" Value="TypeExtensions.ChangeType<T>(false)">@LocalizedText.GetBoolLocalizedText(false)</MudSelectItem>
                 @if (isNullable)
                 {
-                    <MudSelectItem T="bool?" Value="null">@LocalizedText.GetBoolLocalizedText(null)</MudSelectItem>
+                    <MudSelectItem T="T" Value="TypeExtensions.ChangeType<T>(null)">@LocalizedText.GetBoolLocalizedText(null)</MudSelectItem>
                 }
             </MudSelect>
             break;
@@ -103,43 +98,25 @@ else
         case TypeCode.Int16:
         case TypeCode.Int32:
         case TypeCode.Int64:
-            <MudNumericField T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
-                             Label="@Label"
-                             Margin="@Margin"
-                             HelperText="@HelperText"
-                             Adornment="@Adornment"
-                             AdornmentIcon="@AdornmentIcon"
-                             Variant="Variant"
-                             Disabled="Disabled"
-                             ReadOnly="ReadOnly"
-                             FullWidth="FullWidth"
-                             Immediate="Immediate"
-                             @attributes="AdditionalAttributes"></MudNumericField>
+        case TypeCode.UInt16:
+        case TypeCode.UInt32:
+        case TypeCode.UInt64:
+            <MudNumericField T="T"
+                Value="@Value"
+                ValueChanged="OnValueChanged"
+                Immediate="Immediate"
+                @attributes="mergedAttributes" />
             break;
 
         default:
-            <MudTextField T="T" Value="@Value" ValueChanged="e => ValueChanged.InvokeAsync(e)"
-                          Label="@Label"
-                          Typo="@Typo"
-                          Margin="@Margin"
-                          HelperText="@HelperText"
-                          Adornment="@Adornment"
-                          AdornmentIcon="@AdornmentIcon"
-                          Variant="Variant"
-                          Disabled="Disabled"
-                          ReadOnly="ReadOnly"
-                          FullWidth="FullWidth"
-                          Immediate="Immediate"
-                          Clearable="Clearable"
-                          @attributes="AdditionalAttributes"></MudTextField>
+            <MudTextField T="T"
+                Value="@Value"
+                ValueChanged="OnValueChanged"
+                InputType="GetInputTypeForText()"
+                Immediate="Immediate"
+                Clearable="Clearable"
+                Typo="@Typo"
+                @attributes="mergedAttributes" />
             break;
     }
-}
-
-@code {
-
-    [Parameter]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-    [Parameter]
-    public bool Clearable { get; set; }
 }

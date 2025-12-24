@@ -1,0 +1,16 @@
+
+<div class="toggle-modal-content" id="@divId">
+    <button id="toggleButton" @onclick="@toggleFullScreenAsync" type="button" class="toggle-btn" >
+        @if (isFullScreen)
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.FullscreenExit" />
+        }
+        else
+        {
+            <MudIcon Icon="@Icons.Material.Outlined.Fullscreen" />
+        }
+    </button>
+    <div @attributes="AdditionalAttributes" style="height:100%; width:100%;" id="childcontent-@divId">
+        @ChildContent
+    </div>
+</div>
