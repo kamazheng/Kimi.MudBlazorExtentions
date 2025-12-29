@@ -14,5 +14,5 @@ public interface ITabHomePage
     /// var parameters = new Dictionary&lt;string, object&gt; {{ 'Parameter1', 'NewValue1' },{ 'Parameter2', 456 }};
     /// await AddNewTabCallback.InvokeAsync((parameters, typeof(TabContent)));
     /// </summary>
-    EventCallback<(Type ComponentType, Dictionary<string, object> Parameters, string Title, Func<Task<bool>> OnClose)> AddNewTabCallback { get; set; }
+    EventCallback<(Type ComponentType, Dictionary<string, object> Parameters, string Title, Func<string, bool, Task<bool>> OnClose)> AddNewTabCallback { get; set; }
 }

@@ -12,7 +12,7 @@
             <MudTabPanel Text="Home" ShowCloseIcon="false" Class="home_panel" Icon="@Icons.Material.Filled.Home">
                 @RenderHomePage()
             </MudTabPanel>
-            <CascadingValue Value="@CloseActiveTab" Name="@nameof(CloseActiveTab)">
+            <CascadingValue Value="@closeDelegate" Name="@nameof(CloseActiveTab)">
                 @foreach (var tab in UserTabs)
                 {
                     <MudTabPanel ID="@tab.Id" Text="@tab.Title" ShowCloseIcon="@tab.ShowCloseIcon">@tab.Content

@@ -26,6 +26,9 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     private int activeTabIndex;
     private readonly List<TabItem> UserTabs = [];
 
+    // ✅ 正确：把方法转为委托
+    Func<string, bool, Task> closeDelegate => CloseActiveTab;
+
     public MudDynamicTabs MudTabs = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -42,7 +45,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         }
     }
 
-    public void AddNewTab(Type componentType, Dictionary<string, object> parameters, string tabTitle, Func<Task<bool>> OnClose)
+    public void AddNewTab(Type componentType, Dictionary<string, object> parameters, string tabTitle, Func<string, bool, Task<bool>> OnClose)
     {
         var tabId = CalculateTabId(parameters, componentType);
         var existingTab = UserTabs.FirstOrDefault(t => t.Id == tabId);
@@ -86,12 +89,13 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         return hash;
     }
 
-    public async Task CloseActiveTab()
+    public async Task CloseActiveTab(string confirmMsg = "", bool forceClose = false)
     {
         var tab = UserTabs[MudTabs.ActivePanelIndex - 1];
         if (tab.OnClose is not null)
         {
-            var cfClose = await tab.OnClose.Invoke();
+            var cfClose = await tab.OnClose.Invoke(
+                string.IsNullOrEmpty(confirmMsg) ? "Are you sure to close this tab?" : confirmMsg, forceClose);
             if (cfClose)
             {
                 RemoveTab(tab);
@@ -105,14 +109,15 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         await Task.CompletedTask;
     }
 
-    public async Task CloseTab(int tabId)
+    public async Task CloseTab(int tabId, string confirmMsg = "", bool forceClose = false)
     {
         var tab = UserTabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {
             if (tab.OnClose is not null)
             {
-                var cfClose = await tab.OnClose.Invoke();
+                var cfClose = await tab.OnClose.Invoke(
+                    string.IsNullOrEmpty(confirmMsg) ? "Are you sure to close this tab?" : confirmMsg, forceClose);
                 if (cfClose)
                 {
                     RemoveTab(tab);
@@ -135,12 +140,12 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     private RenderFragment RenderHomePage() => builder =>
     {
         builder.OpenComponent(0, typeof(THomePage));
-        builder.AddAttribute(1, nameof(ITabHomePage.AddNewTabCallback), EventCallback.Factory.Create<(Type, Dictionary<string, object>, string, Func<Task<bool>>)>
+        builder.AddAttribute(1, nameof(ITabHomePage.AddNewTabCallback), EventCallback.Factory.Create<(Type, Dictionary<string, object>, string, Func<string, bool, Task<bool>>)>
             (this, AddNewTabFromChild));
         builder.CloseComponent();
     };
 
-    private void AddNewTabFromChild((Type componentType, Dictionary<string, object> parameters, string title, Func<Task<bool>> onClose) args)
+    private void AddNewTabFromChild((Type componentType, Dictionary<string, object> parameters, string title, Func<string, bool, Task<bool>> onClose) args)
     {
         AddNewTab(args.componentType, args.parameters, args.title, args.onClose);
     }
@@ -171,6 +176,6 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         public Dictionary<string, object>? Parameters { get; set; }
         public RenderFragment? Content { get; set; }
         public bool ShowCloseIcon { get; set; } = true;
-        public Func<Task<bool>>? OnClose { get; set; }
+        public Func<string, bool, Task<bool>>? OnClose { get; set; }
     }
 }
