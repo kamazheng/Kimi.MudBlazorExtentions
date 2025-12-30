@@ -18,7 +18,7 @@ public static class TypeExtensions
     /// <summary>
     /// 非泛型通用类型转换，支持 Nullable&lt;T&gt;，并增强 DateOnly/TimeOnly/Enum/Guid/Uri/OADate。
     /// </summary>
-    public static object? ChangeType(this object? value, Type conversion, IFormatProvider? provider = null)
+    public static object? ChangeType(this object? value, Type conversion, IFormatProvider? provider = null, DateTimeZoneStrategy dateTimeZone = DateTimeZoneStrategy.Local)
     {
         if (conversion == null) throw new ArgumentNullException(nameof(conversion));
 
@@ -40,6 +40,10 @@ public static class TypeExtensions
 
         provider ??= CultureInfo.CurrentCulture;
         var culture = provider as CultureInfo ?? CultureInfo.CurrentCulture;
+
+        // === bool 的常见字符串变体 ===
+        if (targetType == typeof(bool) || targetType == typeof(Boolean))
+            return ConvertToBool(value);
 
         // --- 专门支持 DateOnly ---
         if (targetType == typeof(DateOnly))
@@ -67,6 +71,11 @@ public static class TypeExtensions
             var d = ToDouble(value, culture);
             return DateTime.FromOADate(d);
         }
+
+        // --- DateTime（增强解析：ISO/Z/偏移/Unix 时间戳/自定义格式）---
+        if (targetType == typeof(DateTime))
+            return ConvertToDateTime(value, provider, dateTimeZone);
+
 
         // 首选：Convert.ChangeType
         try
@@ -143,6 +152,26 @@ public static class TypeExtensions
     };
 
     // ----------------- 专用转换实现 -----------------
+
+    private static bool ConvertToBool(object value)
+    {
+        switch (value)
+        {
+            case bool b:
+                return b;
+            case string s:
+                var normalized = s.Trim().ToLowerInvariant();
+                if (normalized is "true" or "1" or "yes" or "on" or "是" or "对" or "ok")
+                    return true;
+                if (normalized is "false" or "0" or "no" or "off" or "否" or "错" or "ng")
+                    return false;
+                break;
+            case sbyte or byte or short or ushort or int or uint or long or ulong:
+                return Convert.ToInt64(value) != 0;
+        }
+        throw new InvalidCastException($"无法将类型 {value.GetType()} 转为 bool。");
+    }
+
 
     private static DateOnly ConvertToDateOnly(object value, IFormatProvider provider)
     {
@@ -267,4 +296,133 @@ public static class TypeExtensions
         if (value is string us) return new Uri(us, UriKind.RelativeOrAbsolute);
         throw new InvalidCastException($"无法将类型 {value.GetType()} 转为 Uri。");
     }
+
+
+    private static readonly string[] DateTimeFormats =
+    {
+        // 本地/常见
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd",
+        "yyyy/MM/dd HH:mm:ss",
+        "yyyy/MM/dd",
+        "dd/MM/yyyy HH:mm:ss",
+        "dd-MM-yyyy HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss.fff",
+        "yyyy-MM-dd HH:mm:ss.ffffff",
+        "yyyy-MM-dd HH:mm:ss.fffffff",
+
+        // ISO 8601 基本
+        "yyyy-MM-ddTHH:mm:ss",
+        "yyyy-MM-ddTHH:mm:ss.fff",
+        "yyyy-MM-ddTHH:mm:ss.ffffff",
+        "yyyy-MM-ddTHH:mm:ss.fffffff",
+
+        // ISO 8601 带 Z（UTC）
+        "yyyy-MM-ddTHH:mm:ssZ",
+        "yyyy-MM-ddTHH:mm:ss.fffZ",
+        "yyyy-MM-ddTHH:mm:ss.ffffffZ",
+        "yyyy-MM-ddTHH:mm:ss.fffffffZ",
+
+        // ISO 8601 带偏移（RFC 3339）
+        // 使用 K：匹配 Z 或 +hh:mm/-hh:mm
+        "yyyy-MM-ddTHH:mm:ssK",
+        "yyyy-MM-ddTHH:mm:ss.fffK",
+        "yyyy-MM-ddTHH:mm:ss.ffffffK",
+        "yyyy-MM-ddTHH:mm:ss.fffffffK",
+    };
+
+    private const DateTimeStyles StylesExact = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
+    private const DateTimeStyles StylesLoose = DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal;
+
+    private static DateTime ConvertToDateTime(object value, IFormatProvider? provider, DateTimeZoneStrategy strategy)
+    {
+        // 直接类型
+        if (value is DateTime dt)
+            return dt;
+
+        if (value is DateTimeOffset dto)
+            return strategy == DateTimeZoneStrategy.Utc ? dto.UtcDateTime : dto.LocalDateTime;
+
+        var culture = provider as CultureInfo ?? CultureInfo.InvariantCulture;
+
+        // 数值类：支持 Unix 时间戳（秒/毫秒）
+        switch (value)
+        {
+            case sbyte or byte or short or ushort or int or uint or long or ulong:
+                {
+                    var i64 = System.Convert.ToInt64(value, culture);
+                    return FromUnix(i64, strategy);
+                }
+            case float or double or decimal:
+                {
+                    var dbl = System.Convert.ToDouble(value, culture);
+                    return FromUnixDoubleSeconds(dbl, strategy);
+                }
+            case string s:
+                {
+                    s = s.Trim();
+                    if (string.IsNullOrEmpty(s))
+                        throw new FormatException("空字符串无法转换为 DateTime。");
+
+                    // 字符串数字：当做 Unix 时间戳
+                    if (IsAllDigits(s))
+                    {
+                        var i64 = long.Parse(s, CultureInfo.InvariantCulture);
+                        return FromUnix(i64, strategy);
+                    }
+
+                    // 先尝试 DateTimeOffset 的精确匹配（保留偏移语义）
+                    if (DateTimeOffset.TryParseExact(s, DateTimeFormats, CultureInfo.InvariantCulture, StylesExact, out var dto2))
+                        return strategy == DateTimeZoneStrategy.Utc ? dto2.UtcDateTime : dto2.LocalDateTime;
+
+                    // 再尝试 DateTime 的精确匹配
+                    if (DateTime.TryParseExact(s, DateTimeFormats, CultureInfo.InvariantCulture, StylesExact, out var dt2))
+                        return dt2;
+
+                    // 最后宽松解析
+                    if (DateTimeOffset.TryParse(s, CultureInfo.InvariantCulture, StylesLoose, out var dto3))
+                        return strategy == DateTimeZoneStrategy.Utc ? dto3.UtcDateTime : dto3.LocalDateTime;
+
+                    if (DateTime.TryParse(s, CultureInfo.InvariantCulture, StylesLoose, out var dt3))
+                        return dt3;
+
+                    throw new FormatException($"无法解析为 DateTime：\"{s}\"。");
+                }
+        }
+
+        throw new InvalidCastException($"不支持将类型 {value.GetType()} 转为 DateTime。");
+    }
+
+    private static bool IsAllDigits(string s)
+    {
+        foreach (var c in s)
+        {
+            if (c < '0' || c > '9') return false;
+        }
+        return s.Length > 0;
+    }
+
+    private static DateTime FromUnix(long v, DateTimeZoneStrategy strategy)
+    {
+        // 粗略判断毫秒 vs 秒：>= 10^10 认为是毫秒
+        var isMillis = v >= 10_000_000_000L;
+        var epoch = DateTime.UnixEpoch; // UTC
+        var utc = isMillis ? epoch.AddMilliseconds(v) : epoch.AddSeconds(v);
+        return strategy == DateTimeZoneStrategy.Utc ? utc : utc.ToLocalTime();
+    }
+
+    private static DateTime FromUnixDoubleSeconds(double v, DateTimeZoneStrategy strategy)
+    {
+        var epoch = DateTime.UnixEpoch; // UTC
+        var utc = epoch.AddSeconds(v);
+        return strategy == DateTimeZoneStrategy.Utc ? utc : utc.ToLocalTime();
+    }
+
+}
+
+
+public enum DateTimeZoneStrategy
+{
+    Local, // 返回 LocalDateTime
+    Utc    // 返回 UtcDateTime
 }
