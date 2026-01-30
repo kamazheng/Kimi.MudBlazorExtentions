@@ -1,0 +1,15 @@
+
+@using MudBlazor
+
+<MudTextField @bind-Value="Model.Name" Label="姓名" Class="mb-2" />
+<MudNumericField @bind-Value="Model.Age" Label="年龄" Class="mb-4" />
+
+@code {
+    [Parameter] public UserDto Model { get; set; } = new(); // 页面已有统一数据参数
+
+    public class UserDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Age { get; set; }
+       }
+}

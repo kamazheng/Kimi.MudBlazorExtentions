@@ -4,6 +4,7 @@
 // ***********************************************************************
 
 using Kimi.MudBlazorExtentions.Dialogs;
+using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace Kimi.MudBlazorExtentions.Extensions
@@ -13,7 +14,6 @@ namespace Kimi.MudBlazorExtentions.Extensions
     /// </summary>
     public static class DialogServiceExtensions
     {
-        #region Methods
 
         /// <summary>
         /// Displays a confirmation dialog with the specified content text
@@ -126,9 +126,11 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// <param name="width">The width</param>
         /// <param name="submitBtnText"></param>
         /// <param name="cancelBtnText"></param>
-        /// <param name="labels">if T is tuple, this is for the tuple field label</param>
+        /// <param name="labels">if T is tuple, this is for the tuple field label. Otherwise, only show the perperty which's name in labels</param>
         /// <returns>The dialog result</returns>
-        public static async Task<T?> InputBoxAsync<T>(this IDialogService dialogService, string title, string contentText, T? inputContent = default, Color color = Color.Info, MaxWidth width = MaxWidth.Small, string submitBtnText = "Submit", string cancelBtnText = "Cancel", string[]? labels = default)
+        public static async Task<T?> InputBoxAsync<T>(this IDialogService dialogService, string title, string contentText,
+                T? inputContent = default, Color color = Color.Info, MaxWidth width = MaxWidth.Small,
+                string submitBtnText = "Submit", string cancelBtnText = "Cancel", string[]? labels = default)
         {
             if (typeof(T) == typeof(DateTime) && (inputContent is null || (DateTime)(object)inputContent == DateTime.MinValue))
             {
@@ -265,6 +267,116 @@ namespace Kimi.MudBlazorExtentions.Extensions
             return await dialogService.ConfirmAsync(title, contentText, Color.Warning, confirmBtnText, cancelBtnText: "");
         }
 
-        #endregion
+        /// <summary>
+        /// 返回载荷的版本：用对话框包裹页面，返回 TResult。
+        /// - 若页面接收共享模型（如参数名为“Model”），外层提交时返回该模型；
+        /// - 若页面自行在内部调用 Close(Ok(payload))，则此方法返回 payload。
+        /// </summary>
+        public static async Task<TResult?> ShowPageAsync<TResult, TPage>(
+            this IDialogService dialogService,
+            string title,
+            string? contentText = null,
+            TResult? sharedModel = default,                // 可选：外部共享模型
+            string modelParamName = "",               // 页面参数名（如已有 Model）
+            Dictionary<string, object>? pageParameters = null,
+            Color color = Color.Info,
+            MaxWidth width = MaxWidth.Large,
+            string submitBtnText = "Submit",
+            string cancelBtnText = "Cancel",
+            bool showActions = true                        // 若页面自行关闭，设为 false
+        )
+            where TPage : ComponentBase
+        {
+            var (dialog, result) = await ShowPageCoreAsync<TResult, TPage>(
+                dialogService, title, contentText, sharedModel, modelParamName,
+                pageParameters, color, width, submitBtnText, cancelBtnText, showActions);
+
+            // 取消则返回 default；否则尝试拿到 TResult 载荷
+            if (result is null || result.Canceled)
+                return default;
+
+            return result.Data is TResult typed ? typed : default;
+        }
+
+        /// <summary>
+        /// 不返回值的版本：仅显示页面，不关心结果。
+        /// 内部复用返回值版本的实现（以 object 作为载荷类型）。
+        /// </summary>
+        public static async Task ShowPageAsync<TPage>(
+            this IDialogService dialogService,
+            string title,
+            string? contentText = null,
+            Dictionary<string, object>? pageParameters = null,
+            Color color = Color.Info,
+            MaxWidth width = MaxWidth.Large,
+            string submitBtnText = "Submit",
+            string cancelBtnText = "Cancel",
+            bool showActions = true
+        )
+            where TPage : ComponentBase
+        {
+            // 直接调用返回值版本，载荷类型用 object；调用方忽略结果即可
+            _ = await ShowPageAsync<object, TPage>(
+                dialogService,
+                title,
+                contentText,
+                sharedModel: null,          // 不传共享模型
+                modelParamName: "",         // 不注入模型参数
+                pageParameters,
+                color,
+                width,
+                submitBtnText,
+                cancelBtnText,
+                showActions
+            );
+        }
+
+        /// <summary>
+        /// 共享的核心实现：构造参数并打开对话框，返回 (dialogHandle, dialogResult)。
+        /// 供两个公开方法复用。
+        /// </summary>
+        private static async Task<(IDialogReference dialog, DialogResult? result)> ShowPageCoreAsync<TResult, TPage>(
+            IDialogService dialogService,
+            string title,
+            string? contentText,
+            TResult? sharedModel,
+            string modelParamName,
+            Dictionary<string, object>? pageParameters,
+            Color color,
+            MaxWidth width,
+            string submitBtnText,
+            string cancelBtnText,
+            bool showActions
+        )
+            where TPage : ComponentBase
+        {
+            pageParameters ??= new();
+
+            // 若提供了共享模型，按页面参数名注入（页面需定义相同参数名）
+            if (sharedModel is not null && !string.IsNullOrWhiteSpace(modelParamName))
+                pageParameters[modelParamName] = sharedModel;
+
+            var dialogParameters = new DialogParameters
+            {
+                { nameof(PageDialog<TPage, TResult>.ContentText), contentText ?? string.Empty },
+                { nameof(PageDialog<TPage, TResult>.SubmitButtonText), submitBtnText },
+                { nameof(PageDialog<TPage, TResult>.CancelButtonText), cancelBtnText },
+                { nameof(PageDialog<TPage, TResult>.Color), color },
+                { nameof(PageDialog<TPage, TResult>.ChildParameters), pageParameters },
+                { nameof(PageDialog<TPage, TResult>.ShowActions), showActions },
+                { nameof(PageDialog<TPage, TResult>.SharedModel), sharedModel },
+            };
+
+            var options = new DialogOptions
+            {
+                CloseButton = true,
+                MaxWidth = width,
+                FullWidth = true
+            };
+
+            var dialog = await dialogService.ShowAsync<PageDialog<TPage, TResult>>(title, dialogParameters, options);
+            var result = await dialog.Result;
+            return (dialog, result);
+        }
     }
 }

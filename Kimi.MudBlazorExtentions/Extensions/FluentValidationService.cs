@@ -40,8 +40,7 @@ public static class FluentValidationService
     /// </summary>
     public static Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        if (model == null)
-            throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
         if (string.IsNullOrWhiteSpace(propertyName))
             throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
 
@@ -206,8 +205,7 @@ public static class FluentValidationService<T, V> where V : AbstractValidator<T>
     /// </summary>
     public static Func<object, string, Task<IEnumerable<string>>> ValidateValue => async (model, propertyName) =>
     {
-        if (model == null)
-            throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
         if (string.IsNullOrWhiteSpace(propertyName))
             throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
 

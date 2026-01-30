@@ -31,7 +31,8 @@
         { nameof(FullWidth), FullWidth },
         { nameof(For), For },
         { nameof(Validation), Validation },
-        { nameof(HelperTextOnFocus), HelperTextOnFocus }
+        { nameof(HelperTextOnFocus), HelperTextOnFocus },
+        { nameof(Clearable), isNullable }
         };
 
         // 安全处理 AdditionalAttributes 可能为 null 的情况
@@ -43,15 +44,19 @@
 
             @if (underlyingType == typeof(DateOnly))
             {
-            <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))" DateChanged="(e) => {
-                                    Value = DateOnly.FromDateTime(e ?? DateTime.Now);
+            DateTime? dateOfValue = Value is null? 
+                    (isNullable?null:DateTime.Now):DateTime.Parse(Value.ToString()!);
+            <MudDatePicker Date="@(dateOfValue)" DateChanged="(e) => {
+                                    Value = e is null ? null: DateOnly.FromDateTime(e.Value);
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
                                 }" @attributes="mergedAttributes" />
             }
             else if (underlyingType == typeof(TimeOnly))
             {
-            <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)" TimeChanged="(e) => {
+            DateTime? dateOfValue = Value is null? 
+                                    (isNullable?null:DateTime.Now):DateTime.Parse(Value.ToString()!);
+            <MudTimePicker Time="@(dateOfValue?.TimeOfDay)" TimeChanged="(e) => {
                                     Value = e;
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);
@@ -86,7 +91,8 @@
                                 (Value==null || Value?.ToString() == DateTime.MinValue.ToString() ? DateTime.Now.ToString():Value?.ToString())!
                             ))" ValueChanged="(e) => {
                             Value = TypeExtensions.ChangeType<DateTime?>(e);
-                            ValueChanged.InvokeAsync(Value);
+                            ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
+                            ClassInstanceChanged.InvokeAsync(ClassInstance);
                         }" @attributes="mergedAttributes" />
             break;
             case TypeCode.Boolean:
@@ -113,7 +119,8 @@
             case TypeCode.UInt16:
             case TypeCode.UInt32:
             case TypeCode.UInt64:
-            <MudNumericField T="double" Value="@(Value == null ? 0:double.Parse(Value.ToString()!))" ValueChanged="(e) => {
+            <MudNumericField T="double?" Value="@(Value == null ? 
+                                    (isNullable?null:0):double.Parse(Value.ToString()!))" ValueChanged="(e) => {
                                     Value = e;
                                     ClassInstance.SetPropertyValue(PropertyInfo.Name, Value);
                                     ClassInstanceChanged.InvokeAsync(ClassInstance);

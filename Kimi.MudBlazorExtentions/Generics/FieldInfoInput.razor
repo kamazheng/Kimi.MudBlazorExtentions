@@ -2,6 +2,34 @@
 @using MudBlazor
 @inherits MudBaseInput<object>
 
+@{
+    var commonFieldAttributes = new Dictionary<string, object?>
+    {
+        { nameof(Label), Label },
+        { nameof(HelperText), HelperText },
+        { nameof(Disabled), Disabled },
+        { nameof(ReadOnly), ReadOnly },
+        { nameof(Required), Required },
+        { nameof(Variant), Variant },
+        { nameof(Margin), Margin },
+        { nameof(Adornment), Adornment },
+        { nameof(AdornmentIcon), AdornmentIcon },
+        { nameof(FullWidth), FullWidth },
+        { nameof(For), For },
+        { nameof(Validation), Validation },
+        { nameof(HelperTextOnFocus), HelperTextOnFocus },
+        { nameof(Clearable), isNullable },
+    };
+
+    // 安全处理 mergedAttributes 可能为 null 的情况
+    var safemergedAttributes = UserAttributes ?? new Dictionary<string, object?>();
+    
+    var mergedAttributes = safemergedAttributes
+        .Concat(commonFieldAttributes.Where(kvp => !safemergedAttributes.ContainsKey(kvp.Key)))
+        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+}
+
+
 @if (underlyingType == typeof(DateOnly))
 {
     <MudDatePicker Date="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()))"
@@ -10,15 +38,7 @@
                                     FieldInfo.SetValue(TupleInstance, Value);
                                     TupleInstanceChanged.InvokeAsync(TupleInstance);
                                 }"
-                   Label="@Label"
-                   Margin="@Margin"
-                   HelperText="@HelperText"
-                   Adornment="@Adornment"
-                   AdornmentIcon="@AdornmentIcon"
-                   Variant="Variant"
-                   Disabled="Disabled"
-                   ReadOnly="ReadOnly"
-                   @attributes="AdditionalAttributes" />
+                   @attributes="@mergedAttributes" />
 }
 else if (underlyingType == typeof(TimeOnly))
 {
@@ -28,15 +48,7 @@ else if (underlyingType == typeof(TimeOnly))
                                     FieldInfo.SetValue(TupleInstance, Value);
                                     TupleInstanceChanged.InvokeAsync(TupleInstance);
                                 }"
-                   Label="@Label"
-                   Margin="@Margin"
-                   HelperText="@HelperText"
-                   Adornment="@Adornment"
-                   AdornmentIcon="@AdornmentIcon"
-                   Variant="Variant"
-                   Disabled="Disabled"
-                   ReadOnly="ReadOnly"
-                   @attributes="AdditionalAttributes" />
+                   @attributes="@mergedAttributes" />
 }
 else
 {
@@ -53,15 +65,7 @@ else
                                         FieldInfo.SetValue(TupleInstance, Value);
                                         TupleInstanceChanged.InvokeAsync(TupleInstance);
                                         }"
-                                   Label="@Label"
-                                   Margin="@Margin"
-                                   HelperText="@HelperText"
-                                   Adornment="@Adornment"
-                                   AdornmentIcon="@AdornmentIcon"
-                                   Variant="Variant"
-                                   Disabled="Disabled"
-                                   ReadOnly="ReadOnly"
-                                   @attributes="AdditionalAttributes" />
+                                   @attributes="@mergedAttributes" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker Time="@(DateTime.Parse(Value?.ToString() ?? DateTime.Now.ToString()).TimeOfDay)"
@@ -72,15 +76,7 @@ else
                                         FieldInfo.SetValue(TupleInstance, Value);
                                         TupleInstanceChanged.InvokeAsync(TupleInstance);
                                    }"
-                                   Label="@Label"
-                                   Margin="@Margin"
-                                   HelperText="@HelperText"
-                                   Adornment="@Adornment"
-                                   AdornmentIcon="@AdornmentIcon"
-                                   Variant="Variant"
-                                   Disabled="Disabled"
-                                   ReadOnly="ReadOnly"
-                                   @attributes="AdditionalAttributes" />
+                                   @attributes="@mergedAttributes" />
                 </MudItem>
             </MudGrid>
             break;
@@ -94,9 +90,7 @@ else
                                         FieldInfo.SetValue(TupleInstance, Value);
                                         TupleInstanceChanged.InvokeAsync(TupleInstance);
                                    }"
-                         Disabled="Disabled"
-                         ReadOnly="ReadOnly"
-                         @attributes="AdditionalAttributes"></MudCheckBox>
+                         @attributes="@mergedAttributes"></MudCheckBox>
             break;
         case TypeCode.Single:
         case TypeCode.Double:
@@ -104,24 +98,15 @@ else
         case TypeCode.Int16:
         case TypeCode.Int32:
         case TypeCode.Int64:
-            <MudNumericField T="double"
-                             Value="@(Value == null ? 0:(double)Value)"
+            <MudNumericField T="double?"
+                             Value="@(ToDoubleOrDefault(Value))"
                              ValueChanged="(e) => {
-                                    Value = e;
+                                    var targetType = Nullable.GetUnderlyingType(FieldInfo.FieldType) ?? FieldInfo.FieldType;
+                                    Value =TypeExtensions.ChangeType(e, targetType);
                                     FieldInfo.SetValue(TupleInstance, Value);
                                     TupleInstanceChanged.InvokeAsync(TupleInstance);
                                 }"
-                             Label="@Label"
-                             Margin="@Margin"
-                             HelperText="@HelperText"
-                             Adornment="@Adornment"
-                             AdornmentIcon="@AdornmentIcon"
-                             Variant="Variant"
-                             Disabled="Disabled"
-                             ReadOnly="ReadOnly"
-                             FullWidth="FullWidth"
-                             Immediate="Immediate"
-                             @attributes="AdditionalAttributes"></MudNumericField>
+                             @attributes="@mergedAttributes"></MudNumericField>
             break;
         default:
             <MudTextField T="string" Value="@(Value==null? "":Value.ToString())"
@@ -130,18 +115,7 @@ else
                                     FieldInfo.SetValue(TupleInstance, Value);
                                     TupleInstanceChanged.InvokeAsync(TupleInstance);
                                 }"
-                          Label="@Label"
-                          Typo="@Typo"
-                          Margin="@Margin"
-                          HelperText="@HelperText"
-                          Adornment="@Adornment"
-                          AdornmentIcon="@AdornmentIcon"
-                          Variant="Variant"
-                          Disabled="Disabled"
-                          ReadOnly="ReadOnly"
-                          FullWidth="FullWidth"
-                          Immediate="Immediate"
-                          @attributes="AdditionalAttributes"></MudTextField>
+                          @attributes="@mergedAttributes"></MudTextField>
             break;
     }
 }

@@ -18,7 +18,9 @@
         { nameof(FullWidth), FullWidth },
         { nameof(For), For },
         { nameof(Validation), Validation },
-        { nameof(HelperTextOnFocus), HelperTextOnFocus }
+        { nameof(HelperTextOnFocus), HelperTextOnFocus },
+        { nameof(Clearable), isNullable },
+        { nameof(title), title }
     };
 
     // 安全处理 AdditionalAttributes 可能为 null 的情况
@@ -114,7 +116,6 @@ else
                 ValueChanged="OnValueChanged"
                 InputType="GetInputTypeForText()"
                 Immediate="Immediate"
-                Clearable="Clearable"
                 Typo="@Typo"
                 @attributes="mergedAttributes" />
             break;

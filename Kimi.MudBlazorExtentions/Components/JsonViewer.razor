@@ -67,9 +67,12 @@
 <style>
     .json-viewer {
         font-family: monospace;
-        white-space: pre;
-    }
+        font-family: monospace;
+        white-space: pre-wrap;          /* ← 允许换行且保留缩进/空格 */
+        word-break: break-word;         /* ↑ 避免超长单词挤出容器 */
+        overflow-wrap: anywhere; 
 
+    }
         .json-viewer div {
             color: #333;
         }
@@ -97,4 +100,14 @@
         .json-viewer .null {
             color: #808080;
         }
+
+
+        .json-viewer .string,
+        .json-viewer .number,
+        .json-viewer .boolean,
+        .json-viewer .null {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+    }
+
 </style>

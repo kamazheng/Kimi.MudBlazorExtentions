@@ -22,11 +22,9 @@ namespace Kimi.MudBlazorExtentions.Dialogs
         [Parameter]
         public Color Color { get; set; }
 
-        [Parameter]
-        public T? InputContent { get; set; }
+        [Parameter] public T? InputContent { get; set; }
 
-        [Parameter]
-        public string[]? TupleLabels { get; set; }
+        [Parameter] public string[]? TupleLabels { get; set; }
 
         private void Submit() => MudDialog.Close(DialogResult.Ok(InputContent));
 

@@ -21,18 +21,6 @@ public partial class ToggleFullScreen
 
     private async Task toggleFullScreenAsync(MouseEventArgs e)
     {
-        // var js = @"
-        //     (async function() {
-        //         const element = document.getElementById('contentBlockId');
-        //         if (!document.fullscreenElement) {
-        //             await element.requestFullscreen().catch(err => console.error('Fullscreen request failed:', err));
-        //         } else {
-        //             await document.exitFullscreen().catch(err => console.error('Exit fullscreen failed:', err));
-        //         }
-        //         element.classList.toggle('fullscreen');
-        //     })();
-        //     ";
-
         var js = @"
             (async function() {
                 const element = document.getElementById('contentBlockId');

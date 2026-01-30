@@ -20,7 +20,7 @@ public static class TypeExtensions
     /// </summary>
     public static object? ChangeType(this object? value, Type conversion, IFormatProvider? provider = null, DateTimeZoneStrategy dateTimeZone = DateTimeZoneStrategy.Local)
     {
-        if (conversion == null) throw new ArgumentNullException(nameof(conversion));
+        ArgumentNullException.ThrowIfNull(conversion);
 
         // Nullable<T> 处理
         var t = conversion;

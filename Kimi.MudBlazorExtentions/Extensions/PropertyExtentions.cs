@@ -104,10 +104,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// <returns>The display label.</returns>
         public static string GetDisplayLabel(this MemberInfo property)
         {
-            if (property == null)
-            {
-                throw new ArgumentNullException(nameof(property));
-            }
+            ArgumentNullException.ThrowIfNull(property);
             if (property.GetAttributeIncludingMetadata(typeof(DisplayAttribute)) is DisplayAttribute displayAttr
                 && !string.IsNullOrEmpty(displayAttr.Name))
             {
@@ -147,7 +144,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// </summary>
         /// <param name="expression">The property expression.</param>
         /// <returns>The full property path.</returns>
-        public static string GetFullPropertyName(Expression expression)
+        public static string GetFullPropertyName(this Expression expression)
         {
             if (expression is MemberExpression memberExpression)
             {
@@ -166,7 +163,7 @@ namespace Kimi.MudBlazorExtentions.Extensions
         /// </summary>
         /// <param name="expression">The property expression.</param>
         /// <returns>The property information.</returns>
-        public static PropertyInfo GetPropertyInfo(Expression expression)
+        public static PropertyInfo GetPropertyInfo(this Expression expression)
         {
             if (expression is MemberExpression memberExpression)
             {
@@ -225,6 +222,96 @@ namespace Kimi.MudBlazorExtentions.Extensions
                 return null;
             }
         }
+
+        #region 新增：多级属性显示名拼接（支持 TakeLastLevels）
+        /// <summary>
+            /// 获取表达式对应的属性显示名，并按需要拼接多级的显示名。
+            /// </summary>
+            /// <param name="expression">如 () => p.Tool.Name</param>
+            /// <param name="takeLastLevels">
+            /// 取末尾多少级的显示名进行拼接：
+            /// 1 = 仅末级（默认行为）；2 = 末两级（如 "Tool + Name"）；
+            /// 0 或 &lt;0 或 大于总层级数 = 取全部层级。
+            /// </param>
+            /// <param name="separator">拼接分隔符（默认 " + "）</param>
+        public static string GetDisplayLabel(this Expression<Func<object?>> expression, int takeLastLevels, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, takeLastLevels, separator);
+
+        public static string GetDisplayLabel<T>(this Expression<Func<T>> expression, int takeLastLevels, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, takeLastLevels, separator);
+
+        /// <summary>
+            /// 泛型版本：获取表达式对应的属性显示名，并按需要拼接多级的显示名。
+            /// </summary>
+        public static string GetDisplayLabel<T>(this Expression<Func<T, object?>> expression, int takeLastLevels, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, takeLastLevels, separator);
+
+        /// <summary>
+            /// 兼容旧语义：includeParents = true 等价于 takeLastLevels = 全部层级；false 等价于 1。
+            /// </summary>
+        public static string GetDisplayLabel(this Expression<Func<object?>> expression, bool includeParents, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, includeParents ? 0 : 1, separator);
+
+        public static string GetDisplayLabel<T>(this Expression<Func<T, object?>> expression, bool includeParents, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, includeParents ? 0 : 1, separator);
+        public static string GetDisplayLabel<T>(this Expression<Func<T>> expression, bool includeParents, string separator = " / ")
+            => GetDisplayLabelInternal(expression.Body, includeParents ? 0 : 1, separator);
+        private static string GetDisplayLabelInternal(this Expression body, int takeLastLevels, string separator)
+        {
+            var chain = GetMemberChain(body); // 根->叶，如 [Tool, Name]
+            if (chain.Count == 0)
+                return string.Empty;
+
+            // 计算需要的切片范围
+            if (takeLastLevels <= 0 || takeLastLevels >= chain.Count)
+            {
+                // 取全部
+                return string.Join(separator, chain.Select(m => m.GetDisplayLabel()));
+            }
+
+            // 取末尾 N 级
+            var slice = chain.Skip(chain.Count - takeLastLevels);
+            return string.Join(separator, slice.Select(m => m.GetDisplayLabel()));
+        }
+
+        /// <summary>
+            /// 解析表达式为成员链（根->叶）。仅收集属性（PropertyInfo）。
+            /// </summary>
+        private static List<MemberInfo> GetMemberChain(Expression expression)
+        {
+            var list = new List<MemberInfo>();
+
+            void Walk(Expression exp)
+            {
+                switch (exp)
+                {
+                    case MemberExpression me:
+                        Walk(me.Expression!);
+                        if (me.Member is PropertyInfo) list.Add(me.Member);
+                        break;
+
+                    case UnaryExpression ue:
+                        Walk(ue.Operand);
+                        break;
+
+                    case MethodCallExpression mce:
+                        // 忽略索引器或方法名（如 get_Item），但继续下探对象部分以尽可能提取属性链
+                        if (mce.Object != null) Walk(mce.Object);
+                        break;
+
+                    case ParameterExpression:
+                    case ConstantExpression:
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"不支持的表达式类型：{exp.NodeType}");
+                }
+            }
+
+            Walk(expression);
+            return list;
+        }
+        #endregion
 
         /// <summary>
         /// Determines whether the specified property is human-readable.

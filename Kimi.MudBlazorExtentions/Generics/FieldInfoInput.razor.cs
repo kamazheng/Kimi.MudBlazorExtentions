@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Components;
+using System.Globalization;
 using System.Reflection;
 
 namespace Kimi.MudBlazorExtentions.Generics;
 
 public partial class FieldInfoInput
 {
-    [Parameter]
-    public Dictionary<string, object>? AdditionalAttributes { get; set; }
-
     [Parameter, EditorRequired]
     public object TupleInstance { get; set; } = null!;
     [Parameter]
@@ -15,6 +13,9 @@ public partial class FieldInfoInput
 
     [Parameter, EditorRequired]
     public FieldInfo FieldInfo { get; set; } = null!;
+
+    private bool Clearable { get; set; }
+    private bool isNullable => Nullable.GetUnderlyingType(FieldInfo.FieldType) != null;
 
 
     private System.TypeCode TypeCode => Type.GetTypeCode(FieldInfo.FieldType);
@@ -34,4 +35,14 @@ public partial class FieldInfoInput
             }
         }
     }
+
+
+    private double? ToDoubleOrDefault(object? val)
+    {
+        if (val is null && isNullable == true) return null;
+        if (val is null && isNullable == false) return 0;
+        var s = val?.ToString();
+        return Convert.ToDouble(s, CultureInfo.InvariantCulture);
+    }
+
 }

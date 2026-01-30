@@ -22,6 +22,7 @@ namespace Kimi.MudBlazorExtentions.Generics
         private PropertyInfo[]? subPropertyInfos = Array.Empty<PropertyInfo>();
         private Type underlyingType = null!;
         bool isNullable = false;
+        bool Clearable = false;
         private object? classPropertyValue;
         private string displayLabel => PropertyInfo.GetDisplayLabel();
         private string? title => PropertyInfo.GetXmlSummary();

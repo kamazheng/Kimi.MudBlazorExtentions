@@ -14,7 +14,7 @@ namespace Kimi.MudBlazorExtentions.Buttons;
 
 public class ErrorCatchLoadingFab : MudFab
 {
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     [Inject]
     public IDialogService? DialogService { get; set; }

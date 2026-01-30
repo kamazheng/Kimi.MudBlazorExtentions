@@ -1,21 +1,22 @@
-﻿<MudContainer Class="pa-3">
+﻿@using Kimi.MudBlazorExtentions.Components
+@using System.Text.Json
+<MudContainer Class="pa-3">
     <MudStack Spacing="2" Class="ml-5 mt-3">
-        <MudText Typo="Typo.h3">ERROR OCCURRED</MudText>
-        <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Error">
-            @CurrentException?.Message
-        </MudAlert>
-        @if (!string.IsNullOrEmpty(DetailError))
+        <MudText Typo="Typo.h3" Color="Color.Error">ERROR OCCURRED</MudText>
+        @if (CurrentException is not null )
         {
-            <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Info">
-                @DetailError
-            </MudAlert>
+            <MudAlert Severity="Severity.Error" 
+                style="word-wrap: break-word; word-break: break-all;">@(Truncate(DetailError,1000))</MudAlert>
+            @if(readmore){
+            <JsonViewer JsonData="@CurrentException?.Message" />
+            }
         }
         <MudItem>
             @if (IfDialog != true)
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mr-3" OnClick="ClearError">Clear Error</MudButton>
             }
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ReadMore" Disabled="@disable">Read More</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ReadMore" Disabled="@readmore">Read More</MudButton>
         </MudItem>
     </MudStack>
 </MudContainer>
@@ -33,8 +34,8 @@
     [Inject]
     public NavigationManager? _navigation { get; set; }
 
-    public string? DetailError { get; set; }
-    public bool disable { get; set; } = false;
+    public string? DetailError => CurrentException?.ToString();
+    public bool readmore { get; set; } = false;
 
     protected override void OnInitialized()
     {
@@ -43,8 +44,7 @@
     }
     private void ReadMore(MouseEventArgs e)
     {
-        DetailError = CurrentException?.ToString() ?? null;
-        disable = true;
+        readmore = true;
     }
 
     private void ClearError(MouseEventArgs e)
@@ -55,5 +55,9 @@
             _navigation.Refresh(forceReload: true);
         }
     }
+
+    private static string Truncate(string text, int max = 160)
+        => string.IsNullOrEmpty(text) ? (text ?? "") : (text.Length <= max ? text : text[..max] + " ...");
+
 }
 

@@ -10,17 +10,21 @@ public partial class GenericInput<T> : MudBaseInput<T>
 {
 
     [Parameter]
-    public bool Clearable { get; set; }
-
-    [Parameter]
     public bool WrapWithMudItem { get; set; } = true;
 
     [Parameter]
     public bool? OverrideHelperTextOnFocus { get; set; }
 
+    [Parameter]
+    public int LabelLevels { get; set; } = 1;
+
     private Type underlyingType => Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
     private bool isNullable => Nullable.GetUnderlyingType(typeof(T)) != null;
     private System.TypeCode typeCode => Type.GetTypeCode(underlyingType);
+    private bool Clearable { get; set; }
+
+    private string title = "";
+
 
     private InputType GetInputTypeForText()
     {
@@ -32,10 +36,12 @@ public partial class GenericInput<T> : MudBaseInput<T>
         if (t == typeof(TimeSpan)) return InputType.Time;
         return InputType.Text;
     }
-    private T GetSafeDTValue()
+    private T? GetSafeDTValue()
     {
         if (Value == null || Value.ToString() == DateTime.MinValue.ToString())
         {
+            if (isNullable)
+                return default!;
             return TypeExtensions.ChangeType<T>(DateTime.Now)!;
         }
         return Value;
@@ -52,10 +58,9 @@ public partial class GenericInput<T> : MudBaseInput<T>
         var property = this.For?.GetPropertyInfo();
         if (property is not null)
         {
-            Label ??= property.GetDisplayLabel();
-            HelperText = property.GetXmlSummary();
-            HelperTextOnFocus = OverrideHelperTextOnFocus ?? true;
-
+            Label ??= For?.GetDisplayLabel(LabelLevels) ?? property.GetDisplayLabel();
+            title = property.GetXmlSummary() ?? "";
+            // HelperTextOnFocus = OverrideHelperTextOnFocus ?? true;
         }
     }
 

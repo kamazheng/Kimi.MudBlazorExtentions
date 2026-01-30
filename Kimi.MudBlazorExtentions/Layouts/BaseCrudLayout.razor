@@ -11,7 +11,7 @@
             @if (ShowActionBar)
             {
                 <MudToolBar Style="display:flex; min-height:85px;" Class="py-3">
-                    @if (AllowEdit)
+                    @if (ShowSubmit)
                     {
                         if (UseFab)
                         {
@@ -32,7 +32,7 @@
                         @UserActions(this)
                     }
                     <MudSpacer />
-                    @if (AllowDelete)
+                    @if (ShowDelete)
                     {
                         if (UseFab)
                         {
@@ -73,6 +73,10 @@
                         }
                     }
                 </MudToolBar>
+                if(Model == null)
+                {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-0" />
+                }
             }
         </MudCard>
     </MudItem>
@@ -81,8 +85,8 @@
         <ToggleFullScreen>
         <div id="@baseCrudFormDivId" style="width:100%; min-height:100%;">
             <MudCard Style="min-height:100%; overflow-y:auto;" Class="pa-0 ma-0">
-                <MudForm Model="@Model" style="width:100%; min-height:100%;" @ref="EditForm" Validation="@Validation" Class="pa-0 ma-0"
-                    ValidationDelay="0">
+                <MudForm Model="@Model" style="width:100%; min-height:max(100%,600px);" @ref="EditForm" Validation="@Validation" Class="pa-0 ma-0"
+                    ValidationDelay="0" id="@formId">
                     @if (ShowValidationSummary)
                     {
                         <ValidationSummary />

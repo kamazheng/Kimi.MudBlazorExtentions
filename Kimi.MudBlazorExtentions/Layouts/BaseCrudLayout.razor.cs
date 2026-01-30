@@ -4,6 +4,7 @@
 // Created          : 03/31/2025
 // ***********************************************************************
 
+using System.Security.Principal;
 using Kimi.MudBlazorExtentions.Extensions;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
@@ -18,10 +19,10 @@ public partial class BaseCrudLayout<T>
     [Inject]
     public ISnackbar? _snackbar { get; set; }
     [Parameter]
-    public bool AllowDelete { get; set; } = true;
+    public bool ShowDelete { get; set; } = true;
 
     [Parameter]
-    public bool AllowEdit { get; set; } = true;
+    public bool ShowSubmit { get; set; } = true;
 
     [Parameter]
     public bool ShowActionBar { get; set; } = true;
@@ -94,6 +95,8 @@ public partial class BaseCrudLayout<T>
     public MudForm? EditForm { get; set; }
     public string? TypeXml => XmlDocExtensions.GetXmlSummary(ModelType ?? typeof(T));
 
+    private string formId = TagIdGenerator.Create();
+
     protected override void OnInitialized()
     {
         Validation ??= FluentValidationService.ValidateValue;
@@ -103,5 +106,6 @@ public partial class BaseCrudLayout<T>
     {
         await JsInterop.SetNotScrollMaxHeight(baseCrudFormDivId, 35, MinHeight);
         await JsInterop.SetNotScrollMaxHeight(baseCrudFormCardId, 35, MinHeight);
+        await JsInterop.SetNotScrollMaxHeight(formId, 35, MinHeight);
     }
 }

@@ -5,7 +5,11 @@
 
 <MudDialog DefaultFocus="DefaultFocus.Element">
     <DialogContent>
-        <MudText Class="mb-3">@ContentText</MudText>
+        @if (!string.IsNullOrWhiteSpace(ContentText)){
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> @ContentText
+            </MudText>
+        }
         @{
             var underlyingType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
             var properties = underlyingType.IsClass && underlyingType != typeof(string) ? underlyingType.GetProperties() : null;
@@ -14,10 +18,20 @@
         {
             foreach (var property in properties)
             {
-                <DynamicInput ClassInstance="@InputContent" PropertyInfo="@property" ClassInstanceChanged="e => 
-                                {
-                                    InputContent = TypeExtensions.ChangeType<T?>(e);
-                                }" />
+                if(TupleLabels?.Length > 0){
+                    if(TupleLabels.Any(l => l.Equals(property.Name,StringComparison.OrdinalIgnoreCase))){
+                        <DynamicInput ClassInstance="@InputContent" PropertyInfo="@property" ClassInstanceChanged="e => 
+                            {
+                                InputContent = TypeExtensions.ChangeType<T?>(e);
+                            }" />   
+                    }
+                }
+                else{
+                    <DynamicInput ClassInstance="@InputContent" PropertyInfo="@property" ClassInstanceChanged="e => 
+                        {
+                            InputContent = TypeExtensions.ChangeType<T?>(e);
+                        }" />
+                }
             }
         } 
         else if (underlyingType.IsTuple())
