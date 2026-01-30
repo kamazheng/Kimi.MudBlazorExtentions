@@ -5,14 +5,12 @@
 @typeparam TResult
 
 <MudDialog DefaultFocus="DefaultFocus.Element">
-    <TitleContent>
+    <DialogContent>
         @if (!string.IsNullOrWhiteSpace(ContentText)){
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" /> @ContentText
         </MudText>
         }
-    </TitleContent>
-    <DialogContent>
         <!-- 级联 MudDialog 到子页面 -->
         <CascadingValue Value="MudDialog" Name="@nameof(PageDialog<object,object>)">
             <DynamicComponent Type="typeof(TPage)" Parameters="ChildParameters" />
