@@ -105,7 +105,7 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         {
             RemoveTab(tab);
         }
-        MudTabs.ActivatePanel(0, true);
+        await MudTabs.ActivatePanelAsync(0, true);
         await Task.CompletedTask;
     }
 

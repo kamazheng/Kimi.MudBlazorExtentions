@@ -6,7 +6,7 @@
         @if (CurrentException is not null )
         {
             <MudAlert Severity="Severity.Error" 
-                style="word-wrap: break-word; word-break: break-all;">@(Truncate(DetailError,1000))</MudAlert>
+                style="word-wrap: break-word; word-break: break-all;">@(Truncate(DetailError??"",1000))</MudAlert>
             @if(readmore){
             <JsonViewer JsonData="@CurrentException?.Message" />
             }
