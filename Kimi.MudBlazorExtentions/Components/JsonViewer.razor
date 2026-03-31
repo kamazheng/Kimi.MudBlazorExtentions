@@ -11,7 +11,15 @@
 
     protected override void OnParametersSet()
     {
-        formattedJson = JsonSerializer.Serialize(JsonDocument.Parse(JsonData), new JsonSerializerOptions { WriteIndented = true });
+        try{
+            var jsonDoc = JsonDocument.Parse(JsonData);
+            formattedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        }
+        catch
+        {
+            formattedJson = JsonData; // 如果不是有效的 JSON，直接显示原始数据
+        }
+        // formattedJson = JsonSerializer.Serialize(JsonDocument.Parse(JsonData), new JsonSerializerOptions { WriteIndented = true });
     }
 
     private string GetCssClass(string value)
