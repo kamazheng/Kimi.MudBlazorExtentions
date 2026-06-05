@@ -96,17 +96,15 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
         {
             var cfClose = await tab.OnClose.Invoke(
                 string.IsNullOrEmpty(confirmMsg) ? "Are you sure to close this tab?" : confirmMsg, forceClose);
-            if (cfClose)
-            {
-                RemoveTab(tab);
-            }
+            if (!cfClose) return;
+            RemoveTab(tab);
         }
         else
         {
             RemoveTab(tab);
         }
-        await MudTabs.ActivatePanelAsync(0, true);
-        await Task.CompletedTask;
+        activeTabIndex = 0;
+        StateHasChanged();
     }
 
     public async Task CloseTab(int tabId, string confirmMsg = "", bool forceClose = false)
