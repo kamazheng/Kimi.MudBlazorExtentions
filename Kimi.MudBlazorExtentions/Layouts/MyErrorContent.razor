@@ -1,14 +1,35 @@
-﻿@using Kimi.MudBlazorExtentions.Components
+@using Kimi.MudBlazorExtentions.Components
 @using System.Text.Json
 <MudContainer Class="pa-3">
     <MudStack Spacing="2" Class="ml-5 mt-3">
-        <MudText Typo="Typo.h3" Color="Color.Error">ERROR OCCURRED</MudText>
-        @if (CurrentException is not null )
+        <MudText Typo="Typo.h5" Color="Color.Error">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Class="mr-2 mb-n1" />出错了
+        </MudText>
+        @if (CurrentException is not null)
         {
-            <MudAlert Severity="Severity.Error" 
-                style="word-wrap: break-word; word-break: break-all;">@(Truncate(DetailError??"",1000))</MudAlert>
-            @if(readmore){
-            <JsonViewer JsonData="@CurrentException?.Message" />
+            @* 默认：只显示主要报错信息 *@
+            <MudAlert Severity="Severity.Error" Style="word-wrap:break-word;word-break:break-word;">@PrimaryMessage</MudAlert>
+
+            @* 详情：完整调试信息（服务器 InnerException 链 + 客户端堆栈） *@
+            @if (readmore)
+            {
+                @if (!string.IsNullOrWhiteSpace(ServerException))
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">服务器异常详情</MudText>
+                    <MudPaper Outlined="true" Class="pa-2" Style="max-height:40vh;overflow:auto;">
+                        <pre style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:monospace;">@ServerException</pre>
+                    </MudPaper>
+                }
+                else if (MessageIsJson)
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">响应内容</MudText>
+                    <JsonViewer JsonData="@CurrentException.Message" />
+                }
+
+                <MudText Typo="Typo.subtitle2" Class="mt-2">客户端异常（含堆栈/InnerException）</MudText>
+                <MudPaper Outlined="true" Class="pa-2" Style="max-height:40vh;overflow:auto;">
+                    <pre style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:monospace;">@CurrentException.ToString()</pre>
+                </MudPaper>
             }
         }
         <MudItem>
@@ -16,7 +37,7 @@
             {
                 <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mr-3" OnClick="ClearError">Clear Error</MudButton>
             }
-            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ReadMore" Disabled="@readmore">Read More</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Warning" OnClick="ToggleReadMore">@(readmore ? "收起详情" : "详情")</MudButton>
         </MudItem>
     </MudStack>
 </MudContainer>
@@ -34,18 +55,62 @@
     [Inject]
     public NavigationManager? _navigation { get; set; }
 
-    public string? DetailError => CurrentException?.ToString();
     public bool readmore { get; set; } = false;
 
-    protected override void OnInitialized()
+    // 主要报错信息：响应体若为 JSON(ProblemDetails) 取 detail/message/title；否则取 Message；再否则通用文案
+    private string PrimaryMessage { get; set; } = "";
+    // 服务器 InnerException 链（来自 ProblemDetails 的 exception 扩展字段）
+    private string? ServerException { get; set; }
+    // Message 是否为 JSON（决定详情是否渲染 JsonViewer）
+    private bool MessageIsJson { get; set; }
+
+    protected override void OnParametersSet()
     {
-        var errorBoundary = CurrentException;
-        base.OnInitialized();
+        ServerException = null;
+        MessageIsJson = false;
+        PrimaryMessage = "发生未知错误";
+
+        var message = CurrentException?.Message;
+        if (CurrentException is null)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(message);
+                if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                {
+                    MessageIsJson = true;
+                    var root = doc.RootElement;
+                    PrimaryMessage = GetString(root, "detail")
+                        ?? GetString(root, "message")
+                        ?? GetString(root, "title")
+                        ?? message;
+                    ServerException = GetString(root, "exception");
+                }
+                else
+                {
+                    PrimaryMessage = message;
+                }
+            }
+            catch
+            {
+                PrimaryMessage = message; // 非 JSON：直接作为主消息
+            }
+        }
+        else
+        {
+            PrimaryMessage = $"请求失败（{CurrentException.GetType().Name}）";
+        }
     }
-    private void ReadMore(MouseEventArgs e)
-    {
-        readmore = true;
-    }
+
+    private static string? GetString(JsonElement obj, string name)
+        => obj.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+    private void ToggleReadMore() => readmore = !readmore;
 
     private void ClearError(MouseEventArgs e)
     {
@@ -55,9 +120,4 @@
             _navigation.Refresh(forceReload: true);
         }
     }
-
-    private static string Truncate(string text, int max = 160)
-        => string.IsNullOrEmpty(text) ? (text ?? "") : (text.Length <= max ? text : text[..max] + " ...");
-
 }
-

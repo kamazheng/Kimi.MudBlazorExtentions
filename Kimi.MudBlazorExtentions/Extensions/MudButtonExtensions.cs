@@ -1,4 +1,4 @@
-﻿using Kimi.MudBlazorExtentions.Layouts;
+﻿using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
 namespace Kimi.MudBlazorExtentions.Extensions
@@ -17,7 +17,8 @@ namespace Kimi.MudBlazorExtentions.Extensions
             ISnackbar? Snackbar,
             IDialogService? DialogService,
             ProcessingState processingState,
-            Func<Task> stateHasChanged
+            Func<Task> stateHasChanged,
+            NavigationManager? Navigation = null
             )
         {
             if (!await _semaphore.WaitAsync(0)) return;
@@ -32,26 +33,10 @@ namespace Kimi.MudBlazorExtentions.Extensions
                 // Invoke the button's OnClick handler
                 await button.OnClick.InvokeAsync();
             }
-            catch (ReturnException ex) when (Snackbar != null)
+            catch (Exception ex)
             {
-                Snackbar.Info(ex.Message);
-            }
-            catch (Exception value) when (DialogService != null)
-            {
-                var dialogParameters = new DialogParameters<MyErrorContent>
-                {
-                    { x => x.CurrentException, value },
-                    { x => x.IfDialog, true }
-                };
-
-                var options = new DialogOptions
-                {
-                    CloseButton = true,
-                    MaxWidth = MaxWidth.Large,
-                    FullWidth = true
-                };
-
-                await (await DialogService.ShowAsync<MyErrorContent>("", dialogParameters, options)).Result;
+                // 统一分流：ReturnException/403/401/网络/5xx/真 bug 都走集中 presenter
+                await ApiErrorPresenter.PresentAsync(ex, Snackbar, DialogService, Navigation);
             }
             finally
             {

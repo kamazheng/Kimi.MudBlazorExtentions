@@ -16,6 +16,9 @@ public class ErrorCatchLoadingButton : MudButton
     [Inject]
     public ISnackbar? Snackbar { get; set; }
 
+    [Inject]
+    public NavigationManager? Navigation { get; set; }
+
     [Parameter]
     public bool Display { get; set; } = true;
 
@@ -28,7 +31,7 @@ public class ErrorCatchLoadingButton : MudButton
 
     protected override async Task OnClickHandler(MouseEventArgs ev)
     {
-        await this.ErrorCatchOnClickHandler(_semaphore, Snackbar, DialogService, ProcessingState, () => InvokeAsync(StateHasChanged));
+        await this.ErrorCatchOnClickHandler(_semaphore, Snackbar, DialogService, ProcessingState, () => InvokeAsync(StateHasChanged), Navigation);
     }
     protected override async Task OnInitializedAsync()
     {
