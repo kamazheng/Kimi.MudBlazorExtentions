@@ -35,15 +35,16 @@ namespace Kimi.MudBlazorExtentions.Extensions
             }
             catch (Exception ex)
             {
-                // 统一分流：ReturnException/403/401/网络/5xx/真 bug 都走集中 presenter
+                // 先复位 loading 状态，再等用户关闭对话框；
+                // 否则对话框打开期间 IsProcessing 仍为 true，loading 遮罩会盖住错误对话框。
+                processingState.IsProcessing = false;
+                await stateHasChanged.Invoke();
                 await ApiErrorPresenter.PresentAsync(ex, Snackbar, DialogService, Navigation);
             }
             finally
             {
-                // Reset IsProcessing in the wrapper
-                processingState.IsProcessing = false;
+                processingState.IsProcessing = false; // 幂等，catch 已重置；此处保底
                 await stateHasChanged.Invoke();
-                // Release the semaphore
                 _semaphore.Release();
             }
         }
