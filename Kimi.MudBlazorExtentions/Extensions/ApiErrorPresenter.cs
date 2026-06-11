@@ -52,7 +52,7 @@ public static class ApiErrorPresenter
         NavigationManager? navigation,
         string loginPath)
     {
-        var payload = TryParse(http.Message);
+        var payload = BuildPayload(http);
 
         switch (http.StatusCode)
         {
@@ -111,6 +111,22 @@ public static class ApiErrorPresenter
     }
 
     private sealed record ApiErrorPayload(string? Message, List<string>? MissingRoles, List<string>? MissingPermissions);
+
+    // 优先从 ex.Data 读取结构化数据（EnsureSuccessCode 填充，ex.Message 已是友好消息）；
+    // 退化路径（无 Data）再尝试把 Message 当 JSON 解析，兼容其它抛出点。
+    private static ApiErrorPayload BuildPayload(HttpRequestException http)
+    {
+        var roles = DataStringList(http, "missingRoles");
+        var permissions = DataStringList(http, "missingPermissions");
+        if (roles is not null || permissions is not null || http.Data.Contains("body"))
+        {
+            return new ApiErrorPayload(http.Message, roles, permissions);
+        }
+        return TryParse(http.Message) ?? new ApiErrorPayload(http.Message, null, null);
+    }
+
+    private static List<string>? DataStringList(Exception ex, string key)
+        => ex.Data[key] is string[] arr && arr.Length > 0 ? [.. arr] : null;
 
     private static ApiErrorPayload? TryParse(string? body)
     {

@@ -15,15 +15,15 @@
             {
                 @if (!string.IsNullOrWhiteSpace(ServerException))
                 {
-                    <MudText Typo="Typo.subtitle2" Class="mt-2">服务器异常详情</MudText>
+                    <MudText Typo="Typo.subtitle2" Class="mt-2">服务器异常详情（含 InnerException）</MudText>
                     <MudPaper Outlined="true" Class="pa-2" Style="max-height:40vh;overflow:auto;">
                         <pre style="white-space:pre-wrap;word-break:break-word;margin:0;font-family:monospace;">@ServerException</pre>
                     </MudPaper>
                 }
-                else if (MessageIsJson)
+                else if (!string.IsNullOrWhiteSpace(RawBody))
                 {
                     <MudText Typo="Typo.subtitle2" Class="mt-2">响应内容</MudText>
-                    <JsonViewer JsonData="@CurrentException.Message" />
+                    <JsonViewer JsonData="@RawBody" />
                 }
 
                 <MudText Typo="Typo.subtitle2" Class="mt-2">客户端异常（含堆栈/InnerException）</MudText>
@@ -57,53 +57,60 @@
 
     public bool readmore { get; set; } = false;
 
-    // 主要报错信息：响应体若为 JSON(ProblemDetails) 取 detail/message/title；否则取 Message；再否则通用文案
+    // 主要报错信息（EnsureSuccessCode 已把 ex.Message 友好化）
     private string PrimaryMessage { get; set; } = "";
-    // 服务器 InnerException 链（来自 ProblemDetails 的 exception 扩展字段）
+    // 服务器 InnerException 链（来自 ex.Data["serverException"]）
     private string? ServerException { get; set; }
-    // Message 是否为 JSON（决定详情是否渲染 JsonViewer）
-    private bool MessageIsJson { get; set; }
+    // 原始响应体（来自 ex.Data["body"]），用于 JsonViewer 结构化展示
+    private string? RawBody { get; set; }
 
     protected override void OnParametersSet()
     {
         ServerException = null;
-        MessageIsJson = false;
+        RawBody = null;
         PrimaryMessage = "发生未知错误";
 
-        var message = CurrentException?.Message;
         if (CurrentException is null)
         {
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(message))
+        var message = CurrentException.Message;
+        PrimaryMessage = string.IsNullOrWhiteSpace(message)
+            ? $"请求失败（{CurrentException.GetType().Name}）"
+            : message;
+
+        // 结构化数据优先从 ex.Data 读（由 EnsureSuccessCode 填充）
+        if (CurrentException.Data["serverException"] is string se && !string.IsNullOrWhiteSpace(se))
+        {
+            ServerException = se;
+        }
+        if (CurrentException.Data["body"] is string body && !string.IsNullOrWhiteSpace(body))
+        {
+            RawBody = body;
+        }
+
+        // 退化：无 Data 时尝试把 Message 当 ProblemDetails JSON 解析（兼容其它抛出点）
+        if (ServerException is null && RawBody is null && !string.IsNullOrWhiteSpace(message))
         {
             try
             {
                 using var doc = JsonDocument.Parse(message);
                 if (doc.RootElement.ValueKind == JsonValueKind.Object)
                 {
-                    MessageIsJson = true;
                     var root = doc.RootElement;
                     PrimaryMessage = GetString(root, "detail")
                         ?? GetString(root, "message")
                         ?? GetString(root, "title")
-                        ?? message;
+                        ?? PrimaryMessage;
                     ServerException = GetString(root, "exception");
-                }
-                else
-                {
-                    PrimaryMessage = message;
+                    RawBody = message;
                 }
             }
             catch
             {
-                PrimaryMessage = message; // 非 JSON：直接作为主消息
+                // 非 JSON：维持原 Message 作为主消息
             }
-        }
-        else
-        {
-            PrimaryMessage = $"请求失败（{CurrentException.GetType().Name}）";
         }
     }
 
