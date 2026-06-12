@@ -8,7 +8,9 @@ namespace Kimi.MudBlazorExtentions.Buttons;
 
 public class ErrorCatchButton : MudButton
 {
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    // 实例级：仅防同一按钮重复点击。⚠️ 禁止改回 static——全局共享会导致"打开对话框的按钮 await 期间，
+    // 静态锁被占满，对话框内的 ErrorCatchButton 点击 WaitAsync(0) 失败而静默无反应"。
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     [Inject]
     public IDialogService? DialogService { get; set; }

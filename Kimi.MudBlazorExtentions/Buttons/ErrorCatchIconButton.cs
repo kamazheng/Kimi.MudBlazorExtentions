@@ -8,7 +8,8 @@ namespace Kimi.MudBlazorExtentions.Buttons;
 
 public class ErrorCatchIconButton : MudIconButton
 {
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
+    // 实例级：仅防同一按钮重复点击。⚠️ 禁止改回 static（全局共享会导致对话框内按钮点击静默无反应）。
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     [Inject]
     public IDialogService? DialogService { get; set; }
