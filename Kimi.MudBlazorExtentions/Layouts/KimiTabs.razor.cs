@@ -35,7 +35,13 @@ public partial class KimiTabs<THomePage> where THomePage : ComponentBase, ITabHo
     {
         if (_kimiJsInterop is not null)
         {
-            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 0, "max(100%, 600px)");
+            // 把面板容器高度限到"视口剩余空间"，配合 KimiTabs.razor.css 的 ::deep .mud-tabs-panels{overflow-y:auto}
+            // 使页面内容(含表格底部分页器)在内部滚动、不被 .mud-tabs 的 overflow:hidden 裁掉。
+            // ⚠️ 第三参 min-height 必须显式传 "0"：该参默认值是 "600px"，旧值 "max(100%, 600px)" 会在
+            //    视口高 < 600px 的矮屏/低分屏上把面板强撑到 600px > 视口 → 分页器被顶出视口外永久不可见
+            //    (典型"分页器偶尔有偶尔没有"——叠加本测量的时序竞态)。overflow-y:auto 由 CSS 恒定保证后，
+            //    即便测量高度有时序偏差也仅是滚动区略有出入，分页器始终可滚到，竞态被降级为无害。
+            await _kimiJsInterop.SetNotScrollMaxHeightByClass("mud-tabs-panels", 0, "0");
             await _kimiJsInterop.SetPageTitle(typeof(THomePage).Name);
         }
         if (_stateHasChanged)

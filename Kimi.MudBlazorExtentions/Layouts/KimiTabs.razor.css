@@ -1,0 +1,4 @@
+/* 让 Tab 面板容器内部滚动，避免页面长内容(如表格分页器)被 .mud-tabs 的 overflow:hidden 裁掉。详见 KimiTabs.razor.cs 注释。 */
+::deep .mud-tabs-panels {
+    overflow-y: auto;
+}
